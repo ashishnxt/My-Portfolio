@@ -3,504 +3,909 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/imageslider.css">
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/skill.css">
-    <link rel="stylesheet" href="./css/hero.css">
-    <link rel="stylesheet" href="./css/card-devops.css">
-    <link rel="stylesheet" href="./css/Testimonials.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-   
-
-
-
     <title>— Handcrafted by ME</title>
+    <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: #edeef0; font-family: 'Inter', sans-serif;
+      padding: 12px; -webkit-overflow-scrolling: touch; overflow-x: hidden;
+    }
+    img { max-width: 100%; height: auto; vertical-align: middle; display: inline-block; }
+
+    /* ── GRID ── */
+    .grid-wrapper {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 300px; grid-auto-flow: dense;
+    }
+    .grid-wrapper > div { display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .grid-wrapper > div > img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+    .grid-wrapper .big-2 { grid-column: span 4; grid-row: span 2; }
+    .grid-wrapper .wide  { grid-column: span 2; }
+    .grid-wrapper .wide2 { grid-column: span 2; }
+    .grid-wrapper .tall  { grid-row: span 2; }
+    .grid-wrapper .big   { grid-column: span 2; grid-row: span 2; }
+    .grid-wrapper .slim  { grid-column: span 4; }
+
+    /* ── ADMIN & RESUME BUTTONS ── */
+    /* Admin trigger — completely invisible. 5 taps reveal admin login. */
+    .admin-trigger {
+      position: absolute; top: 12px; right: 12px; z-index: 10;
+      background: transparent; border: none;
+      border-radius: 50%; width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: default; text-decoration: none; outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .admin-trigger:hover { background: transparent; transform: none; }
+    .admin-trigger i { display: none; } /* icon hidden */
+    .resume-btn {
+      position: absolute; bottom: 18px; left: 16px; right: 16px; z-index: 10;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px; padding: 9px 14px;
+      display: none; align-items: center; justify-content: center; gap: 8px;
+      color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+      text-decoration: none; backdrop-filter: blur(6px);
+      transition: background 0.2s, transform 0.1s; font-family: inherit;
+    }
+    .resume-btn:hover { background: rgba(255,255,255,0.28); transform: translateY(-1px); }
+
+    /* ── CONTENT ── */
+    /* ── CONTENT ── */
+    .content {
+      position: absolute; padding: 28px;
+      display: flex; flex-direction: column; justify-content: flex-start; text-align: left;
+      top: 0; left: 0; right: 0;
+    }
+    /* Inside .box, content is relative (not absolute) so the box sizes from text height */
+    .grid-wrapper .box { min-height: 180px; align-items: flex-start; }
+    .grid-wrapper .box .content {
+      position: relative; top: auto; left: auto; right: auto; width: 100%;
+    }
+    .content h2 { font-family: 'Poppins', sans-serif; font-weight: 700; margin: 0 0 8px; font-size: 1.9rem; color: #333; }
+    .content p  { font-family: 'Poppins', sans-serif; font-weight: 500; margin: 0; font-size: 0.95rem; line-height: 1.6; color: #555; }
+
+    /* ── SOCIAL ── */
+    .social-icons { display: grid; grid-template-columns: repeat(2,1fr); gap: 32px; padding: 32px; text-align: center; }
+    .social-icons a { font-size: 36px; color: #000; text-decoration: none; transition: transform 0.3s, color 0.3s; }
+    .social-icons a:hover { color: #7c0a02; transform: scale(1.1); }
+    .social-icons-2 { display: grid; grid-template-columns: repeat(4,1fr); gap: 32px; padding: 28px; text-align: center; }
+    .social-icons-2 a { font-size: 36px; color: #000; text-decoration: none; transition: transform 0.3s, color 0.3s; }
+    .social-icons-2 a:hover { color: #7c0a02; transform: scale(1.1); }
+    .social-section { text-align: center; }
+    .social-heading { font-size: 15px; color: #000; }
+
+    /* ── SLIDER ── */
+    .slider-wrapper { position: relative; width: 100%; height: 100%; }
+    .slider-container {
+      position: relative; width: 100%; height: 100%; overflow: hidden;
+      border-radius: 15px; background: #f5f5f5;
+      touch-action: pan-y pinch-zoom;
+    }
+    .slider-track { display: flex; transition: transform 0.5s ease; height: 100%; }
+    .slide { position: relative; flex: 0 0 100%; width: 100%; height: 100%; }
+    .slide img { width: 100%; height: 100%; object-fit: cover; }
+    .slide-overlay {
+      position: absolute; top: 24px; left: 24px; max-width: 280px;
+      padding: 16px 12px; pointer-events: none; z-index: 3;
+    }
+    .slide-overlay h2 { font-family:'Poppins',sans-serif; font-weight:700; font-size:1.7rem; color:#333; margin:0 0 8px; }
+    .slide-overlay p  { font-family:'Poppins',sans-serif; font-weight:500; font-size:0.9rem; color:#555; line-height:1.5; margin:0; }
+    .slide.light-text .slide-overlay h2,
+    .slide.light-text .slide-overlay p { color: #fff !important; }
+    .dots-container {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 6px; z-index: 4;
+    }
+    .dot { height: 5px; width: 44px; background: rgba(210,212,218,0.8); border-radius: 20px; cursor: pointer; transition: background 0.3s; }
+    .dot.active { background: #959595; }
+    .slider-button { display: none; }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg,#e8e8e8 25%,#f5f5f5 50%,#e8e8e8 75%);
+      background-size: 200% 100%; animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── ABOUT ── */
+    .section-2 {
+      max-width: 100%; display: grid; grid-template-columns: 1fr 1.7fr;
+      gap: 32px; padding: 28px; width: 100%;
+    }
+    .image-wrap { position: relative; overflow: hidden; border-radius: 12px; align-self: start; }
+    .image-wrap img {
+      width: 100%; height: auto; display: block;
+      mask-image: linear-gradient(to right, black 65%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black 65%, transparent 100%);
+    }
+    .content-2 { display: flex; flex-direction: column; padding-top: 20px; }
+    .content-2 h2 { font-size: 26px; font-weight: 600; margin-bottom: 10px; }
+    .content-2 p  { font-size: 15px; line-height: 1.6; margin-bottom: 10px; color: #444; }
+    .skills { margin-top: 10px; }
+    .skills h3 { font-size: 13px; font-weight: 600; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skills-list span { background: #f1f1f1; color: #333; padding: 5px 11px; border-radius: 10px; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; }
+    .skills-list span img { height: 15px; width: auto; }
+
+    /* ── ICON CARD SLIDER ── */
+    .card { max-width:100%; width: 100%; border-radius: 12px; padding: 40px 20px; text-align: center; }
+    .products { position: relative; overflow: hidden; height: 180px; display:flex; justify-content:center; align-items:center; }
+    .product { position: absolute; top:0; left:0; width:100%; opacity:0; visibility:hidden; transition:opacity 0.5s; display:flex; justify-content:center; align-items:center; height:100%; }
+    .product.active { opacity:1; visibility:visible; }
+    .thumbnail { width:100%; display:flex; justify-content:center; align-items:center; }
+    .thumbnail img { max-width:180px; height:130px; object-fit:contain; display:block; margin:0 auto; }
+    .footer { display:flex; justify-content:space-evenly; align-items:center; gap:0; margin-top:12px; width:100%; }
+    .footer .btn { flex:0 0 auto; min-width:80px; text-align:center; }
+    .btn { text-decoration:none; text-transform:uppercase; font-weight:bold; padding:9px 14px; border-radius:4px; color:#7c0a02; position:relative; overflow:hidden; cursor:pointer; background:transparent; border:none; font-family:inherit; transition:color 0.2s; }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials-container { max-width:100%; border-radius:12px; padding:24px 28px; width:100%; }
+    .testimonials-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+    .testimonials-title { font-size:24px; font-weight:700; color:#1a1a1a; letter-spacing:-0.02em; }
+    .navigation-arrows { display:flex; gap:24px; }
+    .nav-arrow { width:34px; height:34px; border-radius:50%; border:2px solid #7c0a02; background:#d1ccc5; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.3s; position:relative; }
+    .nav-arrow:hover { background:#7c0a02; transform:translateY(-2px); }
+    .nav-arrow::before { content:''; width:10px; height:10px; border:2px solid #7c0a02; border-bottom:none; border-right:none; transition:border-color 0.3s; }
+    .nav-arrow:hover::before { border-color:#fff; }
+    .nav-arrow.prev::before { transform:rotate(-45deg); margin-left:3px; }
+    .nav-arrow.next::before { transform:rotate(135deg); margin-right:3px; }
+    .nav-arrow.disabled { opacity:0.3; cursor:not-allowed; }
+    .nav-arrow.disabled:hover { background:#d1ccc5; transform:none; }
+    .testimonials-content { position:relative; overflow:hidden; min-height:80px; }
+    .testimonials-slider { position:relative; width:100%; }
+    .testimonial-slide { position:absolute; top:0; left:0; width:100%; opacity:0; visibility:hidden; transition:opacity 0.5s,visibility 0.5s; }
+    .testimonial-slide.active { opacity:1; visibility:visible; position:relative; }
+    .testimonial-text { font-size:15px; line-height:1.6; color:#2c2c2c; margin-bottom:14px; }
+    .testimonial-author { font-size:13px; color:#7c0a02; font-style:italic; }
+    @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+    .testimonial-slide.entering { animation:slideIn 0.4s ease forwards; }
+
+    /* ── ENTER ANIMATIONS ── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+    .grid-wrapper .tall,
+    .grid-wrapper .box,
+    .grid-wrapper .big,
+    .grid-wrapper .big-2,
+    .grid-wrapper .wide2,
+    .grid-wrapper .wide { opacity:0; }
+    .show-initial.tall  { animation:fadeUp 0.6s cubic-bezier(.4,0,.2,1) 0.1s forwards; }
+    .show-initial.wide2 { animation:fadeUp 0.6s cubic-bezier(.4,0,.2,1) 0.2s forwards; }
+    .show-initial.box   { animation:fadeUp 0.6s cubic-bezier(.4,0,.2,1) 0.35s forwards; }
+    .show-initial.big   { animation:fadeUp 0.6s cubic-bezier(.4,0,.2,1) 0.25s forwards; }
+    .show-initial.big-2 { animation:fadeUp 0.6s cubic-bezier(.4,0,.2,1) 0.3s forwards; }
+    .show-initial.wide  { animation:fadeUp 0.6s cubic-bezier(.4,0,.2,1) 0.2s forwards; }
+
+    /* ── TABLET ── */
+    @media (max-width:1024px) {
+      .grid-wrapper { grid-template-columns:repeat(2,1fr); gap:14px; }
+      .grid-wrapper .big-2, .grid-wrapper .slim { grid-column:span 2; }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width:768px) {
+      html, body { padding:8px; }
+      .grid-wrapper {
+        grid-template-columns:1fr; gap:15px; grid-auto-rows:auto;
+      }
+      .grid-wrapper > div { border-radius:16px !important; }
+      .grid-wrapper .wide,
+      .grid-wrapper .wide2,
+      .grid-wrapper .big,
+      .grid-wrapper .big-2,
+      .grid-wrapper .slim,
+      .grid-wrapper .tall { grid-column:span 1; grid-row:span 14; }
+
+      .grid-wrapper .tall  { min-height:260px; }
+      .grid-wrapper .big   { min-height:310px; }
+      .grid-wrapper .wide  { min-height:270px; }
+      .grid-wrapper .wide2 { min-height:270px; }
+      .grid-wrapper .box   { min-height:160px; }
+      .grid-wrapper .big-2 { min-height:auto; }
+
+      .section-2 { grid-template-columns:1fr; padding:16px; gap:12px; }
+      .image-wrap img {
+        height:200px; object-fit:cover;
+        mask-image:linear-gradient(to bottom,black 75%,transparent 100%);
+        -webkit-mask-image:linear-gradient(to bottom,black 75%,transparent 100%);
+      }
+      .content-2 { padding-top:4px; }
+      .content-2 h2 { font-size:20px; }
+      .content-2 p  { font-size:14px; }
+
+      .content { padding:16px; }
+      .content h2 { font-size:1.5rem; }
+      .content p  { font-size:0.87rem; }
+
+      .slide-overlay { top:12px; left:12px; max-width:200px; padding:8px; }
+      .slide-overlay h2 { font-size:1.2rem; }
+      .slide-overlay p  { font-size:0.8rem; }
+
+      .social-icons { gap:25px; padding:40px; }
+      .social-icons a { font-size:28px; }
+      .social-icons-2 { gap:16px; padding:20px; }
+      .social-icons-2 a { font-size:26px; }
+
+      .card { padding:20px 14px; max-width:100%; }
+      .products { height:140px; }
+      .thumbnail img { height:110px; }
+      .footer { gap:0; justify-content:space-evenly; }
+
+      .testimonials-container { padding:16px 30.slim, px; }
+      .testimonials-title { font-size:20px; }
+      .testimonial-text { font-size:14px; }
+
+      .dot { width:30px; }
+      .resume-btn { font-size:11px; padding:10px 10px; }
+    }
+
+    @media (max-width:420px) {
+      .content h2 { font-size:1.3rem; }
+      .slide-overlay h2 { font-size:1.05rem; }
+      .slide-overlay p  { font-size:0.75rem; }
+      .social-icons { grid-template-columns:repeat(4,1fr); gap:12px; padding:12px; }
+      .social-icons a { font-size:22px; }
+    }
+    </style>
 </head>
 <body>
-    <div class="grid-wrapper">
-        <div class="tall" style="background-color: #2a3036; border-radius: 20px;">
-            <img src="./images/octo.png" alt="">
-            <div class="content" style="position: absolute; top: 0rem;" >
-                <h2 style="color: #edeef0;">DevOps</h2> 
-             <p style="color: aliceblue;">Delivering Scalable Systems from Terminal to Screen  </p>
-             <!-- <p style="color: aliceblue; text-align:end; bottom: 1px;">Ashish Sharma</p> -->
-            </div>
-        </div>
-       <div class="wide2" style="border-radius: 20px; background-color: #800000; position: relative; overflow: hidden; color: white;">
-  
-          <!-- Decorative top image -->
-         <img src="/images/OIP__1_-removebg-preview.png" alt="Top Design" style="width: 100%;">
+<div class="grid-wrapper">
 
-          <!-- Content section -->
-          <div class="content" style="position: absolute; bottom: 0rem; padding: 2rem; width: 100%;">
-    
-           <!-- Heading at the top of content -->
-           <h2 style="color: #fff">Code with clarity. <br> Deploy with confidence.</h2>
-    
-           <!-- External link icon -->
-           <p>
-          <a href="https://github.com/ashishnxt" target="_blank">
-        <i class="fa-solid fa-arrow-up-right-from-square" style="color: #fff;"></i>
-      </a>
-    </p>
-
+  <!-- ① DEVOPS HERO -->
+  <div class="tall" style="background-color:#2a3036;border-radius:20px;">
+    <img src="./images/octo.png" alt="DevOps" id="heroImg">
+    <div class="content" style="top:0; padding: 30px;">
+      <h2 style="color:#edeef0;">DevOps</h2>
+      <p style="color:aliceblue;">Delivering Scalable Systems from Terminal to Screen</p>
+    </div>
+    <!-- Secret admin trigger: 5 taps to open admin login -->
+    <span class="admin-trigger" id="adminTrigger" title="">
+      <i class="fas fa-user-shield"></i>
+    </span>
+    <a id="resumeBtn" class="resume-btn" href="#" download>
+      <i class="fas fa-file-alt"></i> Download Resume
+    </a>
   </div>
+
+  <!-- ② QUOTE/GITHUB -->
+  <div class="wide2" style="border-radius:20px;background-color:#800000;position:relative;overflow:hidden;color:white;">
+    <img src="/images/OIP__1_-removebg-preview.png" alt="" style="width:100%;">
+    <div class="content" style="position:absolute;bottom:0;top:auto;padding:30px;width:100%;">
+      <h2 style="color:#fff">Code with clarity.<br>Deploy with confidence.</h2>
+      <p style="margin-top:8px">
+        <a href="https://github.com/ashishnxt" target="_blank">
+          <i class="fa-solid fa-arrow-up-right-from-square" style="color:#fff;font-size:18px;"></i>
+        </a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ③ HELLO -->
+  <div class="box" style="background:#fff;border-radius:20px;">
+    <div class="content" style="padding: 30px;">
+      <h2>Hello 👋</h2>
+      <p>I'm Ashish — a DevOps-driven developer who designs, deploys, and delivers scalable systems from the UI to EC2.</p>
+    </div>
+  </div>
+
+  <!-- ④ SOCIAL -->
+  <div class="box" style="background:#fff;border-radius:20px;">
+    <div class="social-icons">
+      <a href="/cdn-cgi/l/email-protection#93f2e0fbfae0fbf2ebfed3f4fef2faffbdf0fcfe" aria-label="Email"><i class="fas fa-envelope"></i></a>
+      <a href="https://github.com/ashishnxt/" aria-label="GitHub"><i class="fab fa-github"></i></a>
+      <a href="tel:+918218869389" aria-label="Phone"><i class="fas fa-phone"></i></a>
+      <a href="https://www.linkedin.com/in/ashish-sharma-6551591bb" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+    </div>
+  </div>
+
+  <!-- ⑤ AI SLIDES -->
+  <div class="big">
+    <div class="slider-wrapper">
+      <div class="slider-container" id="aiSliderContainer">
+        <div class="slider-track" id="aiSliderTrack">
+          <div class="slide"><div class="skeleton" style="width:100%;height:100%;border-radius:15px;"></div></div>
+        </div>
+        <div class="dots-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ PROJECTS -->
+  <div class="wide2" style="background-color:#d1ccc5;border-radius:20px;">
+    <div class="testimonials-container">
+      <div class="testimonials-header">
+        <h2 class="testimonials-title">What I Built</h2>
+        <div class="navigation-arrows">
+          <button class="nav-arrow prev" onclick="previousTestimonial()"></button>
+          <button class="nav-arrow next" onclick="nextTestimonial()"></button>
+        </div>
+      </div>
+      <div class="testimonials-content">
+        <div class="testimonials-slider" id="projectsSlider">
+          <div class="testimonial-slide active">
+            <p class="testimonial-text" style="color:#aaa;font-style:italic">Loading…</p>
+            <p class="testimonial-author"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑦ ABOUT + SKILLS -->
+  <div class="big-2" style="background-color:#798645;border-radius:20px;">
+    <div class="section-2">
+      <div class="image-wrap">
+        <img src="/images/myphoto-2.jpg" alt="Ashish Sharma"/>
+      </div>
+      <div class="content-2">
+        <h2 style="color:beige;">Code, Cloud &amp; Creativity</h2>
+        <p id="aboutDesc1" style="color:black;"><span style="color:beige;">I'm Ashish Sharma —</span> a DevOps-driven developer passionate about building seamless digital experiences.</p>
+        <p id="aboutDesc2" style="color:black;">From CI/CD pipelines using Jenkins and Docker to responsive UIs crafted in React and TailwindCSS, I merge DevOps precision with developer creativity.</p>
+        <div class="skills">
+          <h3>Skills</h3>
+          <div class="skills-list" id="skillsList">
+            <span style="color:#ccc;font-style:italic;background:transparent;">Loading…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑧ DEVOPS ICON SLIDER -->
+  <div class="wide" style="background:#fff;border-radius:20px;">
+    <div class="card" id="devopsIconSlider">
+      <div class="products" id="devopsIconProducts">
+        <div class="product active"><div class="thumbnail"><div class="skeleton" style="width:120px;height:120px;border-radius:8px;"></div></div></div>
+      </div>
+      <div class="footer">
+        <button class="btn prev">Prev</button>
+        <button class="btn next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑨ DEVOPS SLIDES -->
+  <div class="big">
+    <div class="slider-wrapper">
+      <div class="slider-container" id="devopsSliderContainer">
+        <div class="slider-track" id="devopsSliderTrack">
+          <div class="slide"><div class="skeleton" style="width:100%;height:100%;border-radius:15px;"></div></div>
+        </div>
+        <div class="dots-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑩ UI SLIDES -->
+  <div class="big">
+    <div class="slider-wrapper">
+      <div class="slider-container" id="uiSliderContainer">
+        <div class="slider-track" id="uiSliderTrack">
+          <div class="slide"><div class="skeleton" style="width:100%;height:100%;border-radius:15px;"></div></div>
+        </div>
+        <div class="dots-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑪ FRONTEND ICON SLIDER -->
+  <div class="wide" style="background:#fff;border-radius:20px;">
+    <div class="card" id="frontendIconSlider">
+      <div class="products" id="frontendIconProducts">
+        <div class="product active"><div class="thumbnail"><div class="skeleton" style="width:120px;height:120px;border-radius:8px;"></div></div></div>
+      </div>
+      <div class="footer">
+        <button class="btn prev">Prev</button>
+        <button class="btn next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑫ DYNAMIC CARDS ZONE — injected from Firebase page-cards collection -->
+  <div id="dynamicCardsZone" style="display:contents;"></div>
+
+  <!-- ⑬ FOOTER -->
+  <div class="slim" style="background:#948979;border-radius:20px;">
+    <div class="social-section">
+      <p class="social-heading">— Handcrafted by <span style="color:#7c0a02;font-weight:600">ME</span></p>
+      <div class="social-icons-2">
+        <a href="/cdn-cgi/l/email-protection#2544564d4c564d445d48654248444c490b464a48"><i class="fas fa-envelope" style="color:whitesmoke"></i></a>
+        <a href="https://github.com/ashishnxt/"><i class="fab fa-github" style="color:whitesmoke"></i></a>
+        <a href="tel:+918218869389"><i class="fas fa-phone" style="color:whitesmoke"></i></a>
+        <a href="https://www.linkedin.com/in/ashish-sharma-6551591bb" target="_blank"><i class="fab fa-linkedin-in" style="color:whitesmoke"></i></a>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-        <div class="box" style="background-color: #ffffff; border-radius: 20px;">
-            <div class="content" >
-                <h2>Hello 👋</h2>
-             <p>I’m Ashish — a DevOps-driven developer who designs, deploys, and delivers scalable systems from the UI to EC2.</p>
-            </div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ── SECRET ADMIN TRIGGER — 5 taps on invisible zone ── */
+(function() {
+  const trigger = document.getElementById('adminTrigger');
+  if (!trigger) return;
+
+  let tapCount  = 0;
+  let tapTimer  = null;
+  const REQUIRED = 5;
+  const WINDOW_MS = 3000; // 5 taps within 3 seconds
+
+  function onTap(e) {
+    e.preventDefault();
+    tapCount++;
+
+    // Reset timer on each tap
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { tapCount = 0; }, WINDOW_MS);
+
+    if (tapCount >= REQUIRED) {
+      tapCount = 0;
+      clearTimeout(tapTimer);
+      // Brief flash so user knows it worked, then open
+      trigger.style.background = 'rgba(255,255,255,0.25)';
+      setTimeout(() => {
+        trigger.style.background = 'transparent';
+        window.open('./admin.html', '_blank');
+      }, 150);
+    }
+  }
+
+  // Support both touch and click (desktop secret too)
+  trigger.addEventListener('touchstart', onTap, { passive: false });
+  trigger.addEventListener('click', onTap);
+})();
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.grid-wrapper .tall,.grid-wrapper .box,.grid-wrapper .big,.grid-wrapper .wide2,.grid-wrapper .wide,.grid-wrapper .big-2')
+      .forEach(el => el.classList.add('show-initial'));
+  }, 80);
+});
+
+/* ── SLIDER FACTORY ── */
+function initSlider(containerId) {
+  setTimeout(() => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const track = container.querySelector('.slider-track');
+    const dotsWrap = container.querySelector('.dots-container');
+    if (!track || !dotsWrap) return;
+    const slides = track.querySelectorAll('.slide');
+    if (!slides.length) return;
+    let cur = 0;
+
+    dotsWrap.innerHTML = '';
+    slides.forEach((_, i) => {
+      const d = document.createElement('span');
+      d.className = 'dot' + (i===0?' active':'');
+      d.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(d);
+    });
+
+    function goTo(n) {
+      cur = ((n % slides.length) + slides.length) % slides.length;
+      track.style.transform = `translateX(-${cur*100}%)`;
+      dotsWrap.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===cur));
+    }
+
+    // touch swipe
+    let tx=0, ty=0, dragging=false, dx=0;
+    container.addEventListener('touchstart', e => { tx=e.touches[0].clientX; ty=e.touches[0].clientY; dragging=false; dx=0; }, {passive:true});
+    container.addEventListener('touchmove', e => {
+      dx = tx - e.touches[0].clientX;
+      const dy = ty - e.touches[0].clientY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) { dragging=true; e.preventDefault(); }
+    }, {passive:false});
+    container.addEventListener('touchend', () => { if (dragging && Math.abs(dx)>40) goTo(cur+(dx>0?1:-1)); dragging=false; }, {passive:true});
+
+    // click nav desktop
+    container.addEventListener('click', e => {
+      if (window.innerWidth <= 768) return;
+      if (e.target.classList.contains('dot')) return;
+      const rect = container.getBoundingClientRect();
+      goTo(cur + (e.clientX - rect.left < rect.width/2 ? -1 : 1));
+    });
+    goTo(0);
+  }, 30);
+}
+
+/* ── ICON CARD SLIDER FACTORY ── */
+function initIconSlider(cardId) {
+  setTimeout(() => {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const products = card.querySelectorAll('.product');
+    const prodWrap = card.querySelector('.products');
+    const prevBtn = card.querySelector('.btn.prev');
+    const nextBtn = card.querySelector('.btn.next');
+    if (!products.length) return;
+    let cur = 0;
+
+    const newPrev = prevBtn.cloneNode(true);
+    const newNext = nextBtn.cloneNode(true);
+    prevBtn.replaceWith(newPrev);
+    nextBtn.replaceWith(newNext);
+
+    function update() {
+      products.forEach(p => p.classList.remove('active'));
+      products[cur].classList.add('active');
+      if (prodWrap) prodWrap.style.height = products[cur].offsetHeight + 'px';
+    }
+    newPrev.addEventListener('click', e => { e.preventDefault(); cur=(cur-1+products.length)%products.length; update(); });
+    newNext.addEventListener('click', e => { e.preventDefault(); cur=(cur+1)%products.length; update(); });
+    update();
+  }, 50);
+}
+
+/* ── TESTIMONIALS ── */
+let tIdx = 0;
+function getSlides() { return document.querySelectorAll('.testimonial-slide'); }
+function updateSlide() {
+  getSlides().forEach((s,i) => {
+    s.classList.remove('active','entering');
+    if (i===tIdx) { s.classList.add('active'); setTimeout(()=>s.classList.add('entering'),10); }
+  });
+  document.querySelector('.nav-arrow.prev')?.classList.toggle('disabled', tIdx===0);
+  document.querySelector('.nav-arrow.next')?.classList.toggle('disabled', tIdx===getSlides().length-1);
+}
+function nextTestimonial() { if (tIdx<getSlides().length-1){ tIdx++; updateSlide(); } }
+function previousTestimonial() { if (tIdx>0){ tIdx--; updateSlide(); } }
+window.reinitTestimonials = () => { tIdx=0; updateSlide(); startAutoSlide(); };
+let autoInt;
+function startAutoSlide() {
+  clearInterval(autoInt);
+  autoInt = setInterval(() => { const s=getSlides(); tIdx=tIdx<s.length-1?tIdx+1:0; updateSlide(); }, 5000);
+}
+const tCont = document.querySelector('.testimonials-container');
+if (tCont) {
+  tCont.addEventListener('mouseenter', ()=>clearInterval(autoInt));
+  tCont.addEventListener('mouseleave', startAutoSlide);
+  let _tx=0;
+  tCont.addEventListener('touchstart', e=>{ _tx=e.changedTouches[0].screenX; }, {passive:true});
+  tCont.addEventListener('touchend', e=>{ const d=_tx-e.changedTouches[0].screenX; if(Math.abs(d)>50) d>0?nextTestimonial():previousTestimonial(); }, {passive:true});
+}
+updateSlide(); startAutoSlide();
+</script>
+
+<!-- ── FIREBASE SYNC ── -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy, doc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// Firebase config — hardcoded so the portfolio always loads data
+// on every device without needing localStorage from the admin panel.
+// Firebase API keys are public by design — security comes from Firestore Rules.
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyD7n6nnFH8IueDXJ8XXa-JNMafT0DmMsEg",
+  authDomain:        "my-portfolio-89d58.firebaseapp.com",
+  projectId:         "my-portfolio-89d58",
+  storageBucket:     "my-portfolio-89d58.firebasestorage.app",
+  messagingSenderId: "465798455129",
+  appId:             "1:465798455129:web:c7c9070f113741cb9c7648"
+};
+
+try {
+  const app = initializeApp(FIREBASE_CONFIG, 'portfolio-main');
+  const db  = getFirestore(app);
+
+  /* helpers */
+  function makeSlide(item) {
+    const bg    = item.bgColor ? `style="background-color:${item.bgColor}"` : '';
+    const cls   = 'slide' + (item.textColor==='light' ? ' light-text' : '');
+    const align = item.textAlign || 'left';
+    // FIX 3: alt="" prevents browsers from showing alt text as a visible label under/over the image
+    return `<div class="${cls}">
+      <img src="${item.imgUrl||''}" alt="" ${bg} loading="lazy" onerror="this.style.opacity=0">
+      <div class="slide-overlay" style="text-align:${align}">
+        <h2 style="text-align:${align}">${item.title||''}</h2>
+        <p style="text-align:${align}">${item.description||''}</p>
+      </div>
+    </div>`;
+  }
+
+  function setSlider(trackId, containerId, docs) {
+    const track = document.getElementById(trackId);
+    if (!track) return;
+    track.innerHTML = docs.length
+      ? docs.map(d => makeSlide({id:d.id,...d.data()})).join('')
+      : `<div class="slide" style="background:#eee;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:14px;font-family:'Inter',sans-serif;">No slides yet — add via Admin Panel</div>`;
+    initSlider(containerId);
+  }
+
+  function makeIcon(item) {
+    return `<div class="product"><div class="thumbnail">${
+      item.iconUrl
+        ? `<img src="${item.iconUrl}" alt="${item.name||''}" loading="lazy">`
+        : `<div style="width:120px;height:100px;background:#f1f1f1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#666;font-family:'Inter',sans-serif;">${item.name||''}</div>`
+    }</div></div>`;
+  }
+
+  function setIconSlider(cardId, productsId, docs) {
+    const prod = document.getElementById(productsId);
+    if (!prod) return;
+    prod.innerHTML = docs.length
+      ? docs.map(d => makeIcon({id:d.id,...d.data()})).join('')
+      : `<div class="product active"><div class="thumbnail" style="color:#aaa;font-size:13px;font-family:'Inter',sans-serif;">No skills yet</div></div>`;
+    initIconSlider(cardId);
+  }
+
+  /* ── AI Slides ── */
+  onSnapshot(query(collection(db,'ai-slides'), orderBy('order')), snap =>
+    setSlider('aiSliderTrack','aiSliderContainer', snap.docs));
+
+  /* ── DevOps Slides ── */
+  onSnapshot(query(collection(db,'devops-slides'), orderBy('order')), snap =>
+    setSlider('devopsSliderTrack','devopsSliderContainer', snap.docs));
+
+  /* ── UI Slides ── */
+  onSnapshot(query(collection(db,'ui-slides'), orderBy('order')), snap =>
+    setSlider('uiSliderTrack','uiSliderContainer', snap.docs));
+
+  /* ── Projects ── */
+  onSnapshot(query(collection(db,'projects'), orderBy('order')), snap => {
+    const slider = document.getElementById('projectsSlider');
+    if (!slider) return;
+    slider.innerHTML = snap.empty
+      ? `<div class="testimonial-slide active"><p class="testimonial-text" style="color:#aaa;font-style:italic">No projects yet.</p><p class="testimonial-author"></p></div>`
+      : snap.docs.map((d,i) => {
+          const item = d.data();
+          return `<div class="testimonial-slide${i===0?' active':''}">
+            <p class="testimonial-text">${item.description||''}</p>
+            <p class="testimonial-author">${item.name||''}</p>
+          </div>`;
+        }).join('');
+    if (typeof window.reinitTestimonials==='function') window.reinitTestimonials();
+  });
+
+  /* ── DevOps Skills (icon slider 1) ── */
+  onSnapshot(query(collection(db,'devops-skills'), orderBy('order')), snap =>
+    setIconSlider('devopsIconSlider','devopsIconProducts', snap.docs));
+
+  /* ── Frontend Skills (icon slider 2) ── */
+  onSnapshot(query(collection(db,'frontend-skills'), orderBy('order')), snap =>
+    setIconSlider('frontendIconSlider','frontendIconProducts', snap.docs));
+
+  /* ── About Skills tag cloud ── */
+  onSnapshot(query(collection(db,'skills'), orderBy('order')), snap => {
+    const list = document.getElementById('skillsList');
+    if (!list) return;
+    list.innerHTML = snap.empty
+      ? '<span style="color:#ccc;font-style:italic;background:transparent;">No skills yet</span>'
+      : snap.docs.map(d => {
+          const item = d.data();
+          return item.iconUrl
+            ? `<span><img src="${item.iconUrl}" alt="${item.name||''}">${item.name||''}</span>`
+            : `<span>${item.name||''}</span>`;
+        }).join('');
+  });
+
+  /* ── Resume ── */
+  onSnapshot(doc(db,'site-settings','resume'), snap => {
+    const btn = document.getElementById('resumeBtn');
+    if (!btn) return;
+    if (snap.exists() && snap.data().url) {
+      btn.href = snap.data().url;
+      btn.target = '_blank';
+      btn.removeAttribute('download');
+      btn.style.display = 'flex';
+    } else {
+      btn.style.display = 'none';
+    }
+  });
+
+  /* ── Profile Image ── */
+  onSnapshot(doc(db,'site-settings','profile'), snap => {
+    if (!snap.exists()) return;
+    const url = snap.data().photoUrl;
+    if (!url) return;
+    const img = document.querySelector('.image-wrap img');
+    if (img) img.src = url;
+  });
+
+  /* ── Dynamic Page Cards ── */
+  onSnapshot(query(collection(db,'page-cards'), orderBy('order')), snap => {
+    const zone = document.getElementById('dynamicCardsZone');
+    if (!zone) return;
+    zone.innerHTML = '';
+    snap.docs.forEach(d => {
+      const card = {id: d.id, ...d.data()};
+      const el = buildDynamicCard(card);
+      if (el) zone.appendChild(el);
+    });
+    // init any new sliders/icon-sliders inside dynamic zone
+    zone.querySelectorAll('[data-slider-id]').forEach(c => initSlider(c.id));
+    zone.querySelectorAll('[data-icon-slider-id]').forEach(c => initIconSlider(c.id));
+    // trigger entrance anim
+    setTimeout(() => zone.querySelectorAll('.dyn-card').forEach(c => c.classList.add('show-initial')), 80);
+  });
+
+  function buildDynamicCard(card) {
+    const cfg = card.config || {};
+    const sizeClass = card.size || 'wide2';
+    const bg = cfg.bgColor || '#ffffff';
+    const br = 'border-radius:20px;overflow:hidden;';
+
+    let inner = '';
+
+    if (card.type === 'text-icon') {
+      inner = `<div class="content" style="top:0;padding:28px;">
+        <h2 style="color:${cfg.titleColor||'#333'}">${cfg.title||''}</h2>
+        <p style="color:${cfg.textColor||'#555'}">${cfg.body||''}</p>
+      </div>`;
+    }
+    else if (card.type === 'quote-banner') {
+      inner = `<div class="content" style="bottom:0;top:auto;padding:2rem;width:100%;">
+        <h2 style="color:${cfg.titleColor||'#fff'}">${cfg.title||''}</h2>
+        ${cfg.link ? `<p style="margin-top:8px"><a href="${cfg.link}" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square" style="color:${cfg.titleColor||'#fff'};font-size:18px"></i></a></p>` : ''}
+      </div>
+      ${cfg.bgImage ? `<img src="${cfg.bgImage}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:0;opacity:0.4">` : ''}`;
+    }
+    else if (card.type === 'skills-cloud') {
+      const items = (cfg.skills || []).map(s =>
+        s.iconUrl ? `<span style="display:inline-flex;align-items:center;gap:5px;background:#f1f1f1;color:#333;padding:5px 11px;border-radius:10px;font-size:13px"><img src="${s.iconUrl}" style="height:15px;width:auto">${s.name}</span>`
+                  : `<span style="background:#f1f1f1;color:#333;padding:5px 11px;border-radius:10px;font-size:13px">${s.name}</span>`
+      ).join('');
+      inner = `<div style="padding:28px;width:100%">
+        ${cfg.title ? `<h3 style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;color:${cfg.titleColor||'#333'}">${cfg.title}</h3>` : ''}
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${items||'<span style="color:#aaa;font-size:13px">No skills yet</span>'}</div>
+      </div>`;
+    }
+    else if (card.type === 'image-slider') {
+      const sliderId = 'dyn-slider-' + card.id;
+      const trackId  = 'dyn-track-' + card.id;
+      const slides   = (cfg.slides || []).map(s => {
+        const cls = s.textColor==='light' ? 'slide light-text' : 'slide';
+        // FIX 3: use empty alt="" to prevent any browser tooltip/label doubling the title
+        const align = s.textAlign || 'left';
+        return `<div class="${cls}">
+          <img src="${s.imgUrl||''}" alt="" ${s.bgColor?`style="background-color:${s.bgColor}"`:''}  loading="lazy">
+          <div class="slide-overlay" style="text-align:${align}">
+            <h2 style="text-align:${align}">${s.title||''}</h2>
+            <p style="text-align:${align}">${s.description||''}</p>
+          </div>
+        </div>`;
+      }).join('') || `<div class="slide" style="background:#eee;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:14px">No slides yet</div>`;
+      inner = `<div class="slider-wrapper" style="width:100%;height:100%">
+        <div class="slider-container" id="${sliderId}">
+          <div class="slider-track" id="${trackId}">${slides}</div>
+          <div class="dots-container"></div>
         </div>
-        <div class="box" style="background-color: #ffffff; border-radius: 20px;">
-            <div class="social-icons">
-                <a href="mailto:ashishaxm@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
-                <a href="https://github.com/ashishnxt/" aria-label="Twitter"><i class="fab fa-github"></i></a>
-                <a href="tel:+918218869389" aria-label="Phone"><i class="fas fa-phone"></i></a>
-                <a href="https://www.linkedin.com/in/ashish-sharma-6551591bb?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" aria-label="LinkedIn" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            </div>
+      </div>`;
+      setTimeout(() => initSlider(sliderId), 100);
+    }
+    else if (card.type === 'icon-slider') {
+      const cardId    = 'dyn-icon-' + card.id;
+      const prodsId   = 'dyn-prods-' + card.id;
+      const icons     = (cfg.icons || []).map(ic =>
+        // FIX 4: ensure thumbnail img is properly sized and centered
+        `<div class="product"><div class="thumbnail" style="display:flex;justify-content:center;align-items:center;width:100%;height:100%">${
+          ic.iconUrl
+            ? `<img src="${ic.iconUrl}" alt="${ic.name||''}" loading="lazy" style="max-height:130px;max-width:180px;object-fit:contain;">`
+            : `<div style="width:120px;height:100px;background:#f1f1f1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#666;text-align:center;padding:8px">${ic.name||''}</div>`
+        }</div></div>`
+      ).join('') || `<div class="product active"><div class="thumbnail" style="color:#aaa;font-size:13px;text-align:center">No icons</div></div>`;
+      // FIX 4: card fills full width of the container
+      inner = `<div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px">
+        <div class="products" id="${prodsId}" style="position:relative;overflow:hidden;height:180px;width:100%;max-width:300px">${icons}</div>
+        <div style="display:flex;justify-content:space-between;width:100%;max-width:300px;margin-top:12px">
+          <button class="btn prev" style="flex:1;text-align:center">Prev</button>
+          <button class="btn next" style="flex:1;text-align:center">Next</button>
         </div>
-        <div class="big">
-            <div class="slider-wrapper">
-                <div class="slider-container" data-slider="1">
-                  <div class="slider-track">
-                    <div class="slide">
-                      <img src="/images/ai-brain.png" alt="Slide 1" style="background-color: #40c2a6;">
-                      <div class="slide-overlay">
-                        <h2>AI-Powered DevOps Evolution</h2>
-                        <p>From smart agents to workflow orchestrators like MCP and N8N — harness the power of automation to accelerate deployment, optimize pipelines, and streamline operations.</p>
-                      </div>
-                    </div>
-                    <div class="slide">
-                        <img src="/images/lama-2-removebg-preview.png" alt="Slide 2" style="background-color: #40c2a6; padding-top: 35%;">
-                        <div class="slide-overlay">
-                          <h2>LLM-Driven DevOps with OLMo</h2>
-                          <p>From intelligent coding to automated insights with OLMo — harness LLM power to accelerate delivery, enhance pipelines, and streamline DevOps <br> workflows.</p>
-                        </div>
-                      </div>
-                    <!-- <img class="slide" src="/images/cici-2-removebg-preview.png" alt="Slide 2"  style="background-color: #40c2a6;"> -->
-                    <div class="slide">
-                        <img src="/images/embed-automation.webp" alt="Slide 3" style="background-color: #40c2a6; padding-top: 55%;">
-                        <div class="slide-overlay">
-                          <h2>Workflow Automation with n8n</h2>
-                          <p>From no-code automation to seamless integrations with n8n — harness the power of workflows to accelerate deployment, optimize pipelines, and streamline operations.</p>
-                        </div>
-                      </div>
-
-                  </div>
-                  <button class="slider-button prev">&#10094;</button>
-                  <button class="slider-button next">&#10095;</button>
-                  <div class="dots-container"></div>
-                </div>
-              </div>
- 
+      </div>`;
+      // Use a wrapper div with a unique id for initIconSlider
+      const wrapId = 'dyn-icon-wrap-' + card.id;
+      inner = `<div id="${wrapId}" style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px">
+        <div class="products" id="${prodsId}" style="position:relative;overflow:hidden;height:180px;width:100%;max-width:320px">${icons}</div>
+        <div class="footer" style="width:100%;max-width:320px">
+          <button class="btn prev">Prev</button>
+          <button class="btn next">Next</button>
         </div>
-        <div class="wide2" style="background-color: #d1ccc5; border-radius: 20px;">
-            <div class="testimonials-container">
-                <div class="testimonials-header">
-                    <h2 class="testimonials-title">What I Built</h2>
-                    <div class="navigation-arrows">
-                        <button class="nav-arrow prev" onclick="previousTestimonial()" aria-label="Previous testimonial"></button>
-                        <button class="nav-arrow next" onclick="nextTestimonial()" aria-label="Next testimonial"></button>
-                    </div>
-                </div>
-        
-                <div class="testimonials-content">
-                    <div class="testimonials-slider">
-                        <div class="testimonial-slide active">
-                            <p class="testimonial-text">
-                              Built and deployed a mechanical company website from scratch using HTML, CSS, JS, and Bootstrap. Configured Nginx on AWS EC2 for hosting, ensuring secure, scalable, and optimized infrastructure.
-                            </p>
-                            <p class="testimonial-author">
-                                ASM Group
-                            </p>
-                        </div>
-        
-                        <div class="testimonial-slide">
-                            <p class="testimonial-text">
-                                Rebuilt a designer's website from scratch using WordPress, showcasing their minimalist work in a structured layout. Fixed existing bugs, improved performance, and ensured a smooth user experience.
-                            </p>
-                            <p class="testimonial-author">
-                                Eleven Space
-                            </p>
-                        </div>
-        
-                        <div class="testimonial-slide">
-                            <p class="testimonial-text">
-                              Developed an agriculture product website using React, TailwindCSS, and Spline for 3D visuals. Showcased manufacturing solutions for the agriculture sector. Deployed with Nginx on Hostinger for performance.
-                            </p>
-                            <p class="testimonial-author">
-                               GS Enterprise Ltd.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </div>`;
+      setTimeout(() => initIconSlider(wrapId), 100);
+    }
+    else if (card.type === 'project-testimonial') {
+      const items = cfg.items || [];
+      const slidesHtml = items.map((it, i) =>
+        `<div class="testimonial-slide${i===0?' active':''}">
+          <p class="testimonial-text">${it.description||''}</p>
+          <p class="testimonial-author">${it.name||''}</p>
+        </div>`).join('') || `<div class="testimonial-slide active"><p class="testimonial-text" style="color:#aaa;font-style:italic">No projects yet.</p><p class="testimonial-author"></p></div>`;
+      const sliderId = 'dyn-proj-' + card.id;
+      inner = `<div class="testimonials-container" style="width:100%">
+        <div class="testimonials-header">
+          <h2 class="testimonials-title" style="color:${cfg.titleColor||'#1a1a1a'}">${cfg.title||'Projects'}</h2>
+          <div class="navigation-arrows">
+            <button class="nav-arrow prev" onclick="dynPrev('${sliderId}')"></button>
+            <button class="nav-arrow next" onclick="dynNext('${sliderId}')"></button>
+          </div>
         </div>
-        <div class="big-2" style="background-color: #798645; border-radius: 20px;">
-         
-            <div class="section-2">
-                <div class="image-wrap">
-                  <img src="/images/myphoto-2.jpg" alt="Stefan Poulos" />
-                </div>
-                <div class="content-2">
-                  <h2 style="color: beige;">Code, Cloud & Creativity</h2>
-                 <p style="color: black;">
-                    <span style="color:beige;">I’m Ashish Sharma —</span>  a DevOps-driven developer passionate about building seamless digital experiences. With a unique blend of backend automation and frontend design, I bring ideas to life through scalable systems and clean interfaces.
-                </p>
-                  <p style="color: black;">From CI/CD pipelines using Jenkins and Docker to responsive UIs crafted in React and TailwindCSS, I merge DevOps precision with developer creativity — delivering solutions that are fast, secure, and beautifully built.</p>
-            
-                  <div class="skills">
-                    <h3>Skills</h3>
-                    <div class="skills-list">
-                      <span>Linux</span>
-                      <span>Ansible</span>
-                      <span>Terraform</span>
-                      <span>Docker</span>
-                      <span>Kubernetes</span>
-                      <span>Jenkins</span>
-                      <span>Git</span>
-                      <span>AWS</span>
-                      <span>Kafka</span>
-                      <span>Nginx</span>
-                      <span>Apache</span>
-                      <span>Postgres</span>
-                      <span>Python</span>
-                      <span>Bash</span>
-                      <span>Grafana</span>
-                      <span>Prometheus</span>
-                      <span>NetData</span>
-                      <span>ReactJS</span>
-                      <span>JavaScript</span>
-                      <span>TailwindCSS</span>
-                      <span>HTML</span>
-                      <span>CSS</span>
-                      <span>Wix</span>
-                      <span>WordPress</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <div class="testimonials-content">
+          <div class="testimonials-slider" id="${sliderId}">${slidesHtml}</div>
         </div>
-  
+      </div>`;
+      setTimeout(() => initDynTestimonials(sliderId), 100);
+    }
+    else return null;
 
+    const wrapper = document.createElement('div');
+    wrapper.className = `${sizeClass} dyn-card`;
+    wrapper.style.cssText = `background:${bg};${br}`;
+    wrapper.setAttribute('data-card-id', card.id);
+    wrapper.innerHTML = inner;
+    return wrapper;
+  }
 
+  // mini testimonial manager for dynamic project cards
+  const dynStates = {};
+  function initDynTestimonials(sliderId) {
+    dynStates[sliderId] = 0;
+    updateDynSlide(sliderId);
+  }
+  function updateDynSlide(sliderId) {
+    const container = document.getElementById(sliderId);
+    if (!container) return;
+    const slides = container.querySelectorAll('.testimonial-slide');
+    const idx = dynStates[sliderId] || 0;
+    slides.forEach((s,i) => { s.classList.remove('active','entering'); if(i===idx){s.classList.add('active');setTimeout(()=>s.classList.add('entering'),10);} });
+  }
+  window.dynPrev = (id) => { const s=document.getElementById(id); if(!s) return; const len=s.querySelectorAll('.testimonial-slide').length; dynStates[id]=Math.max(0,(dynStates[id]||0)-1); updateDynSlide(id); };
+  window.dynNext = (id) => { const s=document.getElementById(id); if(!s) return; const len=s.querySelectorAll('.testimonial-slide').length; dynStates[id]=Math.min(len-1,(dynStates[id]||0)+1); updateDynSlide(id); };
+  onSnapshot(doc(db,'site-settings','text-hero'), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const hero = document.querySelector('.tall');
+    if (!hero) return;
+    if (d.heroTitle)    { const el=hero.querySelector('h2'); if(el) el.textContent=d.heroTitle; }
+    if (d.heroSubtitle) { const el=hero.querySelector('p');  if(el) el.textContent=d.heroSubtitle; }
+    if (d.heroBg)       hero.style.backgroundColor = d.heroBg;
+  });
 
-        <div class="wide" style="background-color: rgb(255, 255, 255); border-radius: 20px; ">
-            <!-- <img src="https://images.unsplash.com/photo-1588414734732-660b07304ddb?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=675&amp;q=80" alt="" /> -->
-            <div class="slider">
-                <div class="card">
-                  <div class="products">
+  /* ── Site Text: Quote ── */
+  onSnapshot(doc(db,'site-settings','text-quote'), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const quoteCard = document.querySelectorAll('.wide2')[0];
+    if (!quoteCard) return;
+    if (d.quoteTitle) { const el=quoteCard.querySelector('h2'); if(el) el.innerHTML=d.quoteTitle; }
+    if (d.quoteLink)  { const el=quoteCard.querySelector('a[target]'); if(el) el.href=d.quoteLink; }
+    if (d.quoteBg)    quoteCard.style.backgroundColor = d.quoteBg;
+  });
 
+  /* ── Site Text: Hello ── */
+  onSnapshot(doc(db,'site-settings','text-hello'), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const boxes = document.querySelectorAll('.box');
+    const helloBox = boxes[0];
+    if (!helloBox) return;
+    if (d.helloTitle) { const el=helloBox.querySelector('h2'); if(el) el.textContent=d.helloTitle; }
+    if (d.helloText)  { const el=helloBox.querySelector('p');  if(el) el.textContent=d.helloText; }
+  });
 
-                    <div class="product">
-                        <div class="thumbnail">
-                          <img src="./images/redhat-2.jpg" alt="redhat" style="width: 180px;">
-                        </div>
-                      </div>
+  /* ── Site Text: About ── */
+  onSnapshot(doc(db,'site-settings','text-about'), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    const aboutCard = document.querySelector('.big-2');
+    if (!aboutCard) return;
+    if (d.aboutTitle) { const el=aboutCard.querySelector('.content-2 h2');  if(el) el.textContent=d.aboutTitle; }
+    if (d.aboutP1)    { const el=document.getElementById('aboutDesc1');      if(el) el.innerHTML='<span style="color:beige">I\'m Ashish Sharma — </span>'+d.aboutP1; }
+    if (d.aboutP2)    { const el=document.getElementById('aboutDesc2');      if(el) el.textContent=d.aboutP2; }
+    if (d.aboutBg)    aboutCard.style.backgroundColor = d.aboutBg;
+  });
 
-                      <div class="product">
-                        <div class="thumbnail">
-                          <img src="./images/ubuntu.png" alt="ubuntu">
-                        </div>
-                      </div>
+  /* ── Site Text: Social ── */
+  onSnapshot(doc(db,'site-settings','text-social'), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    if (d.email)    document.querySelectorAll('a[href^="mailto"]').forEach(a=>a.href='mailto:'+d.email);
+    if (d.phone)    document.querySelectorAll('a[href^="tel"]').forEach(a=>a.href='tel:'+d.phone);
+    if (d.github)   document.querySelectorAll('a[href*="github.com"]').forEach(a=>{ if(!a.classList.contains('admin-trigger')) a.href=d.github; });
+    if (d.linkedin) document.querySelectorAll('a[href*="linkedin"]').forEach(a=>a.href=d.linkedin);
+  });
 
-                      
-
-                    <!-- Slide 1: Ansible -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/ansible/ansible-original.svg" alt="Ansible">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 2: Terraform -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/terraform/terraform-original.svg" alt="Terraform">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 3: Docker -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original.svg" alt="Docker">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 4: Kubernetes -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/kubernetes/kubernetes-plain.svg" alt="Kubernetes">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 5: Jenkins -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/jenkins/jenkins-original.svg" alt="Jenkins">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 6: Git -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" alt="Git">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 7: GitHub -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/github/github-original.svg" alt="GitHub">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 8: AWS -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="AWS">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 9: Python -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Python">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 10: Bash -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bash/bash-original.svg" alt="Bash">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 11: Grafana -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/grafana/grafana-original.svg" alt="Grafana">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 12: Prometheus -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/prometheus/prometheus-original.svg" alt="Prometheus">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 13: Nginx -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nginx/nginx-original.svg" alt="Nginx">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 14: Apache -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/apache/apache-original.svg" alt="Apache">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 15: PostgreSQL -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg" alt="PostgreSQL">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 16: SonarQube (using generic icon as specific one may not be available) -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sonarqube/sonarqube-original.svg" alt="SonarQube">
-                      </div>
-                    </div>
-
-                    <div class="product">
-                        <div class="thumbnail">
-                          <img src="./images/Netdata.png" alt="SonarQube">
-                        </div>
-                      </div>
-
-                      <div class="product">
-                        <div class="thumbnail">
-                          <img src="./images/trivy.webp" alt="SonarQube">
-                        </div>
-                      </div>  
-                  </div>
-              
-                  <div class="footer">
-                    <button class="btn prev" ripple ripple-color="#999999">Prev</button>
-                    <button class="btn next" ripple ripple-color="#999999">Next</button>
-                  </div>
-                </div>
-              </div>
-              
-        </div>
-       
-        <div class="big">
-            <div class="slider-wrapper">
-                <div class="slider-container" data-slider="1">
-                  <div class="slider-track">
-                    <div class="slide">
-                      <img src="/images/slider-3-removebg-preview.png" alt="Slide 1" style="background-color: #7c0a02;">
-                      <div class="slide-overlay">
-                        <h2 style="color: #fff;"> Automation and Orchestration</h2>
-                        <p style="color: #d2d4da; line-height: 1.5;">From seamless CI/CD pipelines to deep integration with tools like Git, Docker, and Kubernetes — Jenkins empowers automation, accelerates delivery, and unifies your DevOps workflow.</p>
-                        
-                      </div>
-                    </div>
-                     <div class="slide">
-                      <img src="/images/Black And Beige Elegant Photo Collage Instagram Story.png" alt="Slide 2" style="background-color: #7c0a02;">
-                      <div class="slide-overlay">
-                        <!-- <h2>First Slider</h2>
-                        <p>Subline description here.</p> -->
-                      </div>
-                    </div>
-                       <div class="slide">
-                      <img src="/images/slider-new-2.png" alt="Slide 3" style="background-color: #7c0a02;">
-                      <div class="slide-overlay">
-                        <!-- <h2>First Slider</h2>
-                        <p>Subline description here.</p> -->
-                      </div>
-                    </div>
-                   
-                  </div>
-                  <button class="slider-button prev">&#10094;</button>
-                  <button class="slider-button next">&#10095;</button>
-                  <div class="dots-container"></div>
-                </div>
-              </div>
-        </div>
-
-
-
-         <div class="big">
-            <div class="slider-wrapper">
-                <div class="slider-container" data-slider="1">
-                  <div class="slider-track">
-                    <div class="slide">
-                      <img src="/images/screen.png" alt="Slide 1">
-                      <div class="slide-overlay">
-                      <h2 style="color: #fff;">Responsive by Design</h2>
-                      <p style="color: #d2d4da; line-height: 1.5;">Responsive layouts built with React and TailwindCSS — delivering clean, consistent experiences across desktops, tablets, and mobile devices.</p>
-                        
-                  </div>
-             </div>
-            <div class="slide">
-                    <video autoplay muted loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
-                     <source src="/video/dev.mp4" type="video/mp4">
-                      Your browser does not support the video tag.
-                    </video>
-                <div class="slide-overlay">
-                  <h2 style="color: #fff;">Interactive UI</h2>
-                 <p style="color: #d2d4da;">Clean. Adaptive. Consistent.</p>
-             </div>
-                    
-                    </div>
-                       <div class="slide">
-                      <img src="/images/slide-3.png" alt="Slide 3">
-                      <div class="slide-overlay">
-                        <h2 style="color: #fff;"> Built to Impress</h2>
-                        <p style="color: #d2d4da; line-height: 1.5;">Real-world projects blending sleek design with high-performance development.</p>
-                      </div>
-                    </div>
-                   
-                  </div>
-                  <button class="slider-button prev">&#10094;</button>
-                  <button class="slider-button next">&#10095;</button>
-                  <div class="dots-container"></div>
-                </div>
-              </div>
-        </div>
-
-
-
-   
-        <div class="wide" style="background-color: rgb(255, 255, 255); border-radius: 20px;">
-            <!-- First Slider -->
-            <div class="slider">
-                <div class="card">
-                  <div class="products">
-                    <!-- Slide 1: ReactJS -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" alt="ReactJS">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 2: TailwindCSS -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" alt="TailwindCSS">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 3: HTML -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg" alt="HTML">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 4: CSS -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original.svg" alt="CSS">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 5: Wix -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="./images/wix.png" alt="Wix">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 6: WordPress -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/wordpress/wordpress-original.svg" alt="WordPress">
-                      </div>
-                    </div>
-              
-                    <!-- Slide 7: Bootstrap -->
-                    <div class="product">
-                      <div class="thumbnail">
-                        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap">
-                      </div>
-                    </div>
-                  </div>
-              
-                  <div class="footer">
-                    <button class="btn prev" ripple ripple-color="#999999">Prev</button>
-                    <button class="btn next" ripple ripple-color="#999999">Next</button>
-                  </div>
-                </div>
-              </div>
-  
-        </div>
-        <div class="slim" style="background-color: #948979; border-radius: 20px;">
-            <div class="social-section">
-                <p class="social-heading">— Handcrafted by  <span style="color: #7c0a02; font-weight: 600;">ME</span>  </p>
-
-
-                <div class="social-icons-2">
-                  <a href="mailto:ashishaxm@gmail.com" aria-label="Email"><i class="fas fa-envelope" style="color: whitesmoke;"></i></a>
-                  <a href="https://github.com/ashishnxt/" aria-label="Twitter"><i class="fab fa-github" style="color: whitesmoke;"></i></i></a>
-                  <a href="tel:+918218869389" aria-label="Phone"><i class="fas fa-phone" style="color: whitesmoke;"></i></a>
-                  <a href="https://www.linkedin.com/in/ashish-sharma-6551591bb?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in" style="color: whitesmoke;"></i></a>
-                </div>
-            </div>
-            
-      
-    </div>
+} catch(e) { console.error('[Portfolio] Firebase error:', e.message); }
+</script>
 </body>
-<script src="./js/script.js"></script>
-<script src="./js/card-devops.js"></script>
-<script src="./js/Testimonials.js"></script>
 </html>

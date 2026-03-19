@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+<style>
+:root {
+  --bg:#0d0f12; --surface:#161a1f; --surface2:#1e2329; --border:#2a3040;
+  --accent:#7c0a02; --accent2:#c41b0f; --text:#e8eaf0; --muted:#6b7385;
+  --green:#22c55e; --yellow:#f59e0b; --red:#ef4444; --blue:#3b82f6;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:radial-gradient(ellipse at 30% 50%,rgba(124,10,2,.15) 0%,transparent 60%),var(--bg);}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:48px 40px;width:100%;max-width:400px;box-shadow:0 40px 80px rgba(0,0,0,.6);}
+.login-box .logo{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;
+  text-transform:uppercase;color:var(--accent2);margin-bottom:32px;display:flex;align-items:center;gap:10px;}
+.login-box .logo::before{content:'';display:block;width:24px;height:2px;background:var(--accent2);}
+.login-box h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:8px;line-height:1.2;}
+.login-box p{color:var(--muted);font-size:13px;margin-bottom:36px;}
+.form-group{margin-bottom:20px;}
+.form-group label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.form-group input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:12px 16px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;}
+.form-group input:focus{border-color:var(--accent2);}
+.btn-login{width:100%;padding:14px;background:var(--accent);border:none;border-radius:8px;color:#fff;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .2s,transform .1s;}
+.btn-login:hover{background:var(--accent2);transform:translateY(-1px);}
+.login-error{color:var(--red);font-size:12px;margin-top:12px;display:none;}
+
+/* PANEL */
+#adminPanel{display:none;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-brand{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;gap:10px;}
+.topbar-brand .dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.status-badge{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
+.status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* btn-logout moved to sidebar */
+
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 56px);}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 0;overflow-y:auto;display:flex;flex-direction:column;height:calc(100vh - 56px);position:sticky;top:56px;}
+.sidebar-section{margin-bottom:6px;}
+.sidebar-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:8px 22px 4px;display:block;}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 22px;font-size:12px;cursor:pointer;
+  transition:all .15s;color:var(--muted);border:none;background:none;width:100%;text-align:left;font-family:inherit;border-left:2px solid transparent;}
+.sidebar-item:hover{color:var(--text);background:var(--surface2);}
+.sidebar-item.active{color:var(--text);background:var(--surface2);border-left-color:var(--accent2);}
+.sidebar-item i{width:14px;text-align:center;font-size:12px;}
+.sidebar-count{margin-left:auto;background:var(--surface2);border-radius:10px;padding:2px 7px;font-size:10px;color:var(--muted);}
+.sidebar-item.active .sidebar-count{background:var(--accent);color:#fff;}
+
+.main{padding:28px;overflow-y:auto;max-height:calc(100vh - 56px);}
+.page-header{margin-bottom:24px;}
+.page-header h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px;}
+.page-header p{font-size:11px;color:var(--muted);}
+
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* GRID */
+.slides-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px;}
+.slide-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s,transform .2s;}
+.slide-card:hover{border-color:var(--accent2);transform:translateY(-2px);}
+.slide-card-img{width:100%;height:140px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden;}
+.slide-card-img img{width:100%;height:100%;object-fit:cover;}
+.slide-card-body{padding:14px;}
+.slide-card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;}
+.slide-card-desc{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:10px;}
+.slide-card-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;letter-spacing:1px;text-transform:uppercase;background:var(--surface2);color:var(--muted);margin-bottom:8px;}
+.slide-card-actions{display:flex;gap:7px;}
+.btn-sm{flex:1;padding:6px;border-radius:5px;font-size:11px;font-family:inherit;cursor:pointer;transition:all .15s;border:none;letter-spacing:.5px;}
+.btn-edit{background:var(--surface2);color:var(--text);border:1px solid var(--border)!important;}
+.btn-edit:hover{border-color:var(--blue)!important;color:var(--blue);}
+.btn-delete{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)!important;}
+.btn-delete:hover{background:var(--red);color:#fff;}
+
+/* BUTTONS */
+.btn-add{display:inline-flex;align-items:center;gap:7px;background:var(--accent);border:none;border-radius:7px;
+  padding:9px 18px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;margin-bottom:16px;}
+.btn-add:hover{background:var(--accent2);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;
+  align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;
+  width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 40px 80px rgba(0,0,0,.7);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-header h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;}
+.modal-close:hover{color:var(--text);}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:7px;padding:9px 13px;color:var(--text);font-family:inherit;font-size:12px;outline:none;transition:border-color .2s;resize:vertical;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent2);}
+.field textarea{min-height:70px;}
+.modal-actions{display:flex;gap:9px;margin-top:20px;}
+.btn-primary{flex:1;padding:11px;background:var(--accent);border:none;border-radius:7px;color:#fff;
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-cancel{padding:11px 18px;background:none;border:1px solid var(--border);border-radius:7px;
+  color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;}
+.btn-cancel:hover{border-color:var(--text);color:var(--text);}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border);border-radius:9px;padding:22px 14px;text-align:center;
+  cursor:pointer;transition:border-color .2s;background:var(--surface2);}
+.upload-zone:hover{border-color:var(--accent2);}
+.progress-wrap{display:none;margin-top:10px;}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;}
+.progress-bar-bg{background:var(--surface2);border-radius:4px;height:5px;overflow:hidden;}
+.progress-bar{background:var(--accent2);height:100%;width:0%;transition:width .3s;border-radius:4px;}
+.divider{display:flex;align-items:center;gap:8px;margin:10px 0;}
+.divider span{font-size:10px;color:var(--muted);}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* COLOR PICKER */
+.color-row{display:flex;align-items:center;gap:8px;}
+.color-row input[type=color]{width:36px;height:36px;border:2px solid var(--border);border-radius:6px;
+  cursor:pointer;background:none;padding:2px;}
+.color-row input[type=text]{flex:1;}
+.color-swatches{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.swatch{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
+.swatch:hover{border-color:var(--text);}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.stat-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+
+/* SETUP */
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:14px;}
+.setup-card h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+.setup-card p{font-size:12px;color:var(--muted);line-height:1.8;}
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:14px;margin:10px 0;font-size:11px;line-height:1.9;overflow-x:auto;color:#a8d8b9;}
+.code-block span.key{color:#7dd3fc;} .code-block span.val{color:#fcd34d;} .code-block span.comment{color:#4b5563;}
+.config-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-save-config{grid-column:span 2;padding:11px;background:var(--green);border:none;border-radius:7px;
+  color:#000;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.btn-save-config:hover{opacity:.85;}
+.config-status{grid-column:span 2;font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
+
+/* LOCK */
+.lock-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  background:var(--surface2);border-radius:8px;margin-top:10px;}
+.lock-row span{font-size:12px;color:var(--muted);}
+.toggle-switch{position:relative;width:42px;height:22px;cursor:pointer;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+.toggle-switch input:checked + .toggle-slider{background:var(--green);}
+.toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px);}
+
+/* RESUME */
+.resume-current{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+.resume-current i{font-size:24px;color:var(--accent2);}
+.resume-current-info{flex:1;}
+.resume-current-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.resume-current-url{font-size:11px;color:var(--muted);word-break:break-all;}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:9px;}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 16px;
+  min-width:240px;display:flex;align-items:center;gap:10px;font-size:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.toast.success{border-color:var(--green);} .toast.error{border-color:var(--red);}
+.toast-icon{font-size:15px;}
+.toast.success .toast-icon{color:var(--green);} .toast.error .toast-icon{color:var(--red);}
+
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);grid-column:1/-1;}
+.empty-state i{font-size:36px;margin-bottom:14px;display:block;}
+.empty-state p{font-size:13px;}
+.fix-banner{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:18px 22px;margin-bottom:18px;display:flex;align-items:flex-start;gap:14px;}
+
+/* INLINE COLOR FIELD */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ── CARD BUILDER ── */
+.cb-list { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.cb-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:16px 18px; display:flex; align-items:center; gap:14px;
+  cursor:grab; transition:border-color .2s, background .15s; user-select:none;
+}
+.cb-card:hover { border-color:var(--accent2); }
+.cb-card.drag-over { border-color:var(--blue); background:rgba(59,130,246,.08); border-style:dashed; }
+.cb-card.dragging { opacity:0.4; cursor:grabbing; }
+.cb-drag-handle { color:var(--muted); font-size:16px; cursor:grab; padding:2px 4px; flex-shrink:0; }
+.cb-card-icon {
+  width:38px; height:38px; border-radius:8px; background:var(--surface2);
+  display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
+}
+.cb-card-info { flex:1; min-width:0; }
+.cb-card-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:2px; }
+.cb-card-meta  { font-size:11px; color:var(--muted); }
+.cb-card-badge {
+  font-size:10px; padding:3px 8px; border-radius:10px; letter-spacing:1px;
+  text-transform:uppercase; font-weight:600; white-space:nowrap; flex-shrink:0;
+}
+.badge-slider   { background:rgba(59,130,246,.15);   color:var(--blue); }
+.badge-text     { background:rgba(34,197,94,.15);    color:var(--green); }
+.badge-quote    { background:rgba(245,158,11,.15);   color:var(--yellow); }
+.badge-skills   { background:rgba(124,10,2,.15);     color:var(--accent2); }
+.badge-icon     { background:rgba(139,92,246,.15);   color:#a78bfa; }
+.badge-project  { background:rgba(20,184,166,.15);   color:#2dd4bf; }
+.cb-actions { display:flex; gap:6px; flex-shrink:0; }
+
+/* TYPE PICKER GRID */
+.type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:4px; }
+.type-option {
+  border:2px solid var(--border); border-radius:10px; padding:16px 10px;
+  text-align:center; cursor:pointer; transition:all .2s; background:var(--surface2);
+}
+.type-option:hover { border-color:var(--accent2); background:var(--surface); }
+.type-option.selected { border-color:var(--accent2); background:rgba(196,27,15,.08); }
+.type-option i { font-size:22px; display:block; margin-bottom:8px; color:var(--muted); }
+.type-option.selected i { color:var(--accent2); }
+.type-option span { font-size:11px; font-family:'Syne',sans-serif; font-weight:600; }
+
+/* SIZE PICKER */
+.size-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.size-opt {
+  border:2px solid var(--border); border-radius:8px; padding:10px 6px;
+  text-align:center; cursor:pointer; transition:all .15s; background:var(--surface2);
+  font-size:11px; font-family:'Syne',sans-serif; font-weight:600;
+}
+.size-opt:hover { border-color:var(--accent2); }
+.size-opt.selected { border-color:var(--accent2); background:rgba(196,27,15,.08); }
+.size-opt .size-preview {
+  width:100%; aspect-ratio:2/1; background:var(--border); border-radius:4px;
+  margin-bottom:6px; display:block;
+}
+
+/* REPEATER (for slide items, icon items, project items inside a dynamic card) */
+.repeater { display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+.repeater-item {
+  background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+  padding:12px 14px; display:flex; align-items:flex-start; gap:10px;
+}
+.repeater-item-body { flex:1; display:flex; flex-direction:column; gap:6px; }
+.repeater-item-body input,
+.repeater-item-body textarea {
+  width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px;
+  padding:7px 11px; color:var(--text); font-family:inherit; font-size:12px; outline:none; resize:vertical;
+}
+.repeater-item-body input:focus,
+.repeater-item-body textarea:focus { border-color:var(--accent2); }
+.repeater-add {
+  width:100%; padding:9px; background:none; border:1px dashed var(--border); border-radius:8px;
+  color:var(--muted); font-family:inherit; font-size:12px; cursor:pointer; transition:all .15s;
+}
+.repeater-add:hover { border-color:var(--accent2); color:var(--accent2); }
+.btn-remove-item {
+  background:rgba(239,68,68,.1); border:none; border-radius:5px; padding:5px 8px;
+  color:var(--red); cursor:pointer; font-size:11px; flex-shrink:0; margin-top:2px;
+}
+.btn-remove-item:hover { background:var(--red); color:#fff; }
+
+@media(max-width:600px){
+  .type-grid { grid-template-columns:repeat(2,1fr); }
+  .size-grid  { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ── Sidebar overlay: always hidden until .open added ── */
+.sidebar-overlay{display:none;}
+
+/* ── Hamburger: hidden on desktop, shown on tablet/mobile ── */
+.hamburger{
+  display:none;background:none;border:none;cursor:pointer;
+  color:var(--text);font-size:20px;padding:4px 8px;
+  border-radius:6px;transition:background .15s;flex-shrink:0;
+}
+.hamburger:hover{background:var(--surface2);}
+
+/* ── Tablet / small laptop (≤1280px): collapse sidebar to drawer ── */
+@media(max-width:1280px){
+  .layout{grid-template-columns:1fr;}
+  .hamburger{display:flex;align-items:center;justify-content:center;}
+  .sidebar{
+    position:fixed;top:0;left:0;
+    width:240px;height:100vh;
+    z-index:500;
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+    padding-top:58px;
+    box-shadow:4px 0 24px rgba(0,0,0,.4);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.55);z-index:499;backdrop-filter:blur(2px);
+  }
+  .sidebar-overlay.open{display:block;}
+  .main{padding:20px;}
+  .topbar{padding:0 16px;}
+}
+
+/* ── Mobile (≤640px): tighter everything ── */
+@media(max-width:640px){
+  .main{padding:14px;}
+  .topbar{padding:0 12px;height:50px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important;}
+  .config-form{grid-template-columns:1fr;}
+  .btn-save-config,.config-status{grid-column:span 1;}
+  .field-row{grid-template-columns:1fr;}
+  .dash-two-col{grid-template-columns:1fr!important;}
+  .page-header h2{font-size:18px;}
+  .slides-grid{grid-template-columns:1fr;}
+  .cb-card{flex-wrap:wrap;}
+  .cb-card-actions{width:100%;justify-content:flex-end;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="logo">Admin Access</div>
+    <h1>Portfolio<br>Control Panel</h1>
+    <p id="loginSubtitle">Sign in with your Firebase account.</p>
+
+    <div id="loginFormSection">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="ashish@example.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
+               onkeypress="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn-login" id="loginBtn" onclick="doLogin()">
+        <i class="fas fa-sign-in-alt" style="margin-right:8px"></i>Sign In
+      </button>
+    </div>
+
+    <div class="login-error" id="loginError">Invalid credentials.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="hamburger" onclick="toggleSidebar()" id="hamburgerBtn" aria-label="Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topbar-brand"><div class="dot"></div>Portfolio Admin</div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-badge" id="dbStatus" style="color:var(--muted)">Not connected</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <span class="sidebar-label">Overview</span>
+        <button class="sidebar-item active" onclick="showTab('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</button>
+        <button class="sidebar-item" onclick="showTab('card-builder',this)"><i class="fas fa-magic"></i> Card Builder <span class="sidebar-count" id="cnt-page-cards">0</span></button>
+      </div>
+      <div class="sidebar-section">
+        <span class="sidebar-label">Slides</span>
+        <button class="sidebar-item" onclick="showTab('ai-slides',this)"><i class="fas fa-robot"></i> AI Slides <span class="sidebar-count" id="cnt-ai-slides">0</span></button>
+        <button class="sidebar-item" onclick="showTab('devops-slides',this)"><i class="fas fa-server"></i> DevOps Slides <span class="sidebar-count" id="cnt-devops-slides">0</span></button>
+        <button class="sidebar-item" onclick="showTab('ui-slides',this)"><i class="fas fa-desktop"></i> UI Slides <span class="sidebar-count" id="cnt-ui-slides">0</span></button>
+      </div>
+      <div class="sidebar-section">
+        <span class="sidebar-label">Content</span>
+        <button class="sidebar-item" onclick="showTab('site-text',this)"><i class="fas fa-pen"></i> Site Text / Cards</button>
+        <button class="sidebar-item" onclick="showTab('profile-image',this)"><i class="fas fa-user-circle"></i> Profile Image</button>
+        <button class="sidebar-item" onclick="showTab('projects',this)"><i class="fas fa-folder"></i> Projects <span class="sidebar-count" id="cnt-projects">0</span></button>
+        <button class="sidebar-item" onclick="showTab('skills',this)"><i class="fas fa-tags"></i> About Skills <span class="sidebar-count" id="cnt-skills">0</span></button>
+        <button class="sidebar-item" onclick="showTab('devops-skills',this)"><i class="fas fa-cogs"></i> DevOps Icons <span class="sidebar-count" id="cnt-devops-skills">0</span></button>
+        <button class="sidebar-item" onclick="showTab('frontend-skills',this)"><i class="fas fa-code"></i> Frontend Icons <span class="sidebar-count" id="cnt-frontend-skills">0</span></button>
+        <button class="sidebar-item" onclick="showTab('resume',this)"><i class="fas fa-file-alt"></i> Resume</button>
+      </div>
+      <div class="sidebar-section">
+        <span class="sidebar-label">Settings</span>
+        <button class="sidebar-item" onclick="showTab('firebase-setup',this)"><i class="fas fa-database"></i> Firebase</button>
+        <button class="sidebar-item" onclick="showTab('cloudinary-setup',this)"><i class="fas fa-image"></i> Cloudinary</button>
+      </div>
+      <!-- Sidebar footer: status + logout -->
+      <div style="margin-top:auto;padding:16px 14px 20px;border-top:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 10px;background:var(--surface2);border-radius:8px">
+          <span id="sidebarStatusDot" style="width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0"></span>
+          <span id="sidebarStatusText" style="font-size:11px;color:var(--muted)">Not connected</span>
+        </div>
+        <button onclick="doLogout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:var(--red);font-family:inherit;font-size:12px;cursor:pointer;transition:all .2s"
+          onmouseover="this.style.background='rgba(239,68,68,.18)'" onmouseout="this.style.background='rgba(239,68,68,.08)'">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+      <!-- CARD BUILDER -->
+      <div class="tab-content" id="tab-card-builder">
+        <div class="page-header">
+          <h2>Card Builder</h2>
+          <p>Add new cards to your portfolio, drag to reorder, edit or delete any card</p>
+        </div>
+        <button class="btn-add" onclick="openCardBuilder()">
+          <i class="fas fa-plus"></i> Add New Card
+        </button>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <i class="fas fa-grip-vertical"></i> Drag cards up/down to reorder their position on your website
+        </div>
+        <div class="cb-list" id="cbList">
+          <div class="empty-state" style="grid-column:unset">
+            <i class="fas fa-layer-group"></i>
+            <p>No custom cards yet. Click "+ Add New Card" to create one.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="tab-content active" id="tab-dashboard">
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <p id="dashGreeting">Welcome back, Ashish</p>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+          <div class="stat-card" style="cursor:pointer" onclick="showTab('ai-slides',document.querySelector('[onclick*=ai-slides]'))">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="stat-label" style="margin:0;font-size:9px">AI Slides</div>
+              <i class="fas fa-robot" style="color:var(--blue);font-size:14px"></i>
+            </div>
+            <div class="stat-value" id="s-ai" style="font-size:22px">—</div>
+            <div class="stat-sub">image carousel</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer" onclick="showTab('devops-slides',document.querySelector('[onclick*=devops-slides]'))">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="stat-label" style="margin:0;font-size:9px">DevOps Slides</div>
+              <i class="fas fa-server" style="color:var(--accent2);font-size:14px"></i>
+            </div>
+            <div class="stat-value" id="s-devops" style="font-size:22px">—</div>
+            <div class="stat-sub">image carousel</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer" onclick="showTab('ui-slides',document.querySelector('[onclick*=ui-slides]'))">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="stat-label" style="margin:0;font-size:9px">UI Slides</div>
+              <i class="fas fa-desktop" style="color:var(--green);font-size:14px"></i>
+            </div>
+            <div class="stat-value" id="s-ui" style="font-size:22px">—</div>
+            <div class="stat-sub">image carousel</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer" onclick="showTab('projects',document.querySelector('[onclick*=projects]'))">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="stat-label" style="margin:0;font-size:9px">Projects</div>
+              <i class="fas fa-folder" style="color:var(--yellow);font-size:14px"></i>
+            </div>
+            <div class="stat-value" id="s-proj" style="font-size:22px">—</div>
+            <div class="stat-sub">what I built</div>
+          </div>
+        </div>
+
+        <!-- TWO COLUMN: QUICK ACTIONS + STATUS -->
+        <div class="dash-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+          <!-- QUICK ACTIONS -->
+          <div class="setup-card" style="margin:0">
+            <h3 style="margin-bottom:14px"><i class="fas fa-bolt" style="color:var(--yellow)"></i> Quick Actions</h3>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button onclick="showTab('card-builder',document.querySelector('[onclick*=card-builder]'))"
+                style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);cursor:pointer;font-family:inherit;font-size:12px;text-align:left;transition:border-color .2s"
+                onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
+                <i class="fas fa-magic" style="color:var(--accent2);width:16px"></i>
+                <div><div style="font-weight:600">Add New Card</div><div style="font-size:10px;color:var(--muted)">Card Builder</div></div>
+                <i class="fas fa-chevron-right" style="margin-left:auto;color:var(--muted);font-size:10px"></i>
+              </button>
+              <button onclick="showTab('ai-slides',document.querySelector('[onclick*=ai-slides]'))"
+                style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);cursor:pointer;font-family:inherit;font-size:12px;text-align:left;transition:border-color .2s"
+                onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+                <i class="fas fa-images" style="color:var(--blue);width:16px"></i>
+                <div><div style="font-weight:600">Manage Slides</div><div style="font-size:10px;color:var(--muted)">AI / DevOps / UI</div></div>
+                <i class="fas fa-chevron-right" style="margin-left:auto;color:var(--muted);font-size:10px"></i>
+              </button>
+              <button onclick="showTab('site-text',document.querySelector('[onclick*=site-text]'))"
+                style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);cursor:pointer;font-family:inherit;font-size:12px;text-align:left;transition:border-color .2s"
+                onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+                <i class="fas fa-pen" style="color:var(--green);width:16px"></i>
+                <div><div style="font-weight:600">Edit Site Text</div><div style="font-size:10px;color:var(--muted)">Headlines, bio, links</div></div>
+                <i class="fas fa-chevron-right" style="margin-left:auto;color:var(--muted);font-size:10px"></i>
+              </button>
+              <button onclick="showTab('resume',document.querySelector('[onclick*=resume]'))"
+                style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);cursor:pointer;font-family:inherit;font-size:12px;text-align:left;transition:border-color .2s"
+                onmouseover="this.style.borderColor='var(--yellow)'" onmouseout="this.style.borderColor='var(--border)'">
+                <i class="fas fa-file-alt" style="color:var(--yellow);width:16px"></i>
+                <div><div style="font-weight:600">Update Resume</div><div style="font-size:10px;color:var(--muted)">PDF download button</div></div>
+                <i class="fas fa-chevron-right" style="margin-left:auto;color:var(--muted);font-size:10px"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- CONTENT STATUS -->
+          <div class="setup-card" style="margin:0">
+            <h3 style="margin-bottom:14px"><i class="fas fa-layer-group" style="color:var(--blue)"></i> Content Overview</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+                <span style="color:var(--muted);display:flex;align-items:center;gap:8px"><i class="fas fa-cogs" style="width:14px"></i> DevOps Icons</span>
+                <span id="dash-devops-skills" style="font-family:'Syne',sans-serif;font-weight:700">—</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+                <span style="color:var(--muted);display:flex;align-items:center;gap:8px"><i class="fas fa-code" style="width:14px"></i> Frontend Icons</span>
+                <span id="dash-frontend-skills" style="font-family:'Syne',sans-serif;font-weight:700">—</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+                <span style="color:var(--muted);display:flex;align-items:center;gap:8px"><i class="fas fa-tags" style="width:14px"></i> About Skills</span>
+                <span id="dash-skills" style="font-family:'Syne',sans-serif;font-weight:700">—</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+                <span style="color:var(--muted);display:flex;align-items:center;gap:8px"><i class="fas fa-magic" style="width:14px"></i> Custom Cards</span>
+                <span id="dash-cards" style="font-family:'Syne',sans-serif;font-weight:700">—</span>
+              </div>
+              <div style="height:1px;background:var(--border);margin:2px 0"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+                <span style="color:var(--muted);display:flex;align-items:center;gap:8px"><i class="fas fa-file-alt" style="width:14px"></i> Resume</span>
+                <span id="dash-resume" style="font-family:'Syne',sans-serif;font-weight:700;font-size:11px">—</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+                <span style="color:var(--muted);display:flex;align-items:center;gap:8px"><i class="fas fa-user-circle" style="width:14px"></i> Profile Photo</span>
+                <span id="dash-photo" style="font-family:'Syne',sans-serif;font-weight:700;font-size:11px">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FIREBASE STATUS -->
+        <div class="setup-card" style="margin:0">
+          <h3 style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+            <span id="dash-firebase-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block"></span>
+            Firebase Status
+            <span id="dash-firebase-status" style="font-size:11px;font-weight:400;color:var(--muted)">Not connected</span>
+          </h3>
+          <p style="font-size:11px;color:var(--muted);line-height:1.7">
+            All changes sync to your portfolio in real time — no redeploy needed.
+            If status shows "Not connected", go to <strong style="color:var(--text)">Settings → Firebase</strong> and enter your config.
+          </p>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <a href="https://your-netlify-site.netlify.app" target="_blank"
+              style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-decoration:none;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+              <i class="fas fa-external-link-alt"></i> View Portfolio
+            </a>
+            <button onclick="showTab('firebase-setup',document.querySelector('[onclick*=firebase-setup]'))"
+              style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit">
+              <i class="fas fa-database"></i> Firebase Settings
+            </button>
+            <button onclick="showTab('cloudinary-setup',document.querySelector('[onclick*=cloudinary-setup]'))"
+              style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit">
+              <i class="fas fa-image"></i> Cloudinary Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE TABS (ai-slides, devops-slides, ui-slides) -->
+      <div class="tab-content" id="tab-ai-slides"><div class="page-header"><h2>AI Slides</h2><p>Top carousel — AI / Automation themed</p></div><button class="btn-add" onclick="openModal('ai-slides')"><i class="fas fa-plus"></i> Add Slide</button><div class="slides-grid" id="grid-ai-slides"></div></div>
+      <div class="tab-content" id="tab-devops-slides"><div class="page-header"><h2>DevOps Slides</h2><p>CI/CD and infrastructure themed</p></div><button class="btn-add" onclick="openModal('devops-slides')"><i class="fas fa-plus"></i> Add Slide</button><div class="slides-grid" id="grid-devops-slides"></div></div>
+      <div class="tab-content" id="tab-ui-slides"><div class="page-header"><h2>UI / Frontend Slides</h2><p>Responsive design and frontend project carousel</p></div><button class="btn-add" onclick="openModal('ui-slides')"><i class="fas fa-plus"></i> Add Slide</button><div class="slides-grid" id="grid-ui-slides"></div></div>
+
+      <!-- PROJECTS -->
+      <div class="tab-content" id="tab-projects">
+        <div class="page-header"><h2>Projects — "What I Built"</h2><p>Testimonial-style project cards</p></div>
+        <button class="btn-add" onclick="openModal('projects')"><i class="fas fa-plus"></i> Add Project</button>
+        <div class="slides-grid" id="grid-projects"></div>
+      </div>
+
+      <!-- ABOUT SKILLS -->
+      <div class="tab-content" id="tab-skills">
+        <div class="page-header"><h2>About Section Skills</h2><p>Tag cloud shown in the about/bio section</p></div>
+        <button class="btn-add" onclick="openModal('skills')"><i class="fas fa-plus"></i> Add Skill</button>
+        <div class="slides-grid" id="grid-skills"></div>
+      </div>
+
+      <!-- DEVOPS ICON SKILLS -->
+      <div class="tab-content" id="tab-devops-skills">
+        <div class="page-header"><h2>DevOps Icon Slider</h2><p>Tech icons shown in the DevOps card slider</p></div>
+        <button class="btn-add" onclick="openModal('devops-skills')"><i class="fas fa-plus"></i> Add Icon</button>
+        <div class="slides-grid" id="grid-devops-skills"></div>
+      </div>
+
+      <!-- FRONTEND ICON SKILLS -->
+      <div class="tab-content" id="tab-frontend-skills">
+        <div class="page-header"><h2>Frontend Icon Slider</h2><p>Tech icons shown in the Frontend card slider</p></div>
+        <button class="btn-add" onclick="openModal('frontend-skills')"><i class="fas fa-plus"></i> Add Icon</button>
+        <div class="slides-grid" id="grid-frontend-skills"></div>
+      </div>
+
+      <!-- SITE TEXT / CARD TEXT EDITOR -->
+      <div class="tab-content" id="tab-site-text">
+        <div class="page-header"><h2>Site Text &amp; Card Content</h2><p>Edit all text-based cards directly — changes go live instantly</p></div>
+
+        <!-- HERO CARD -->
+        <div class="setup-card">
+          <h3><i class="fas fa-layer-group" style="color:var(--accent2)"></i> &nbsp;① DevOps Hero Card <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">(tall card — top left)</span></h3>
+          <div class="field"><label>Title</label><input type="text" id="st-heroTitle" placeholder="DevOps"/></div>
+          <div class="field"><label>Subtitle</label><input type="text" id="st-heroSubtitle" placeholder="Delivering Scalable Systems…"/></div>
+          <div class="field"><label>Background Color</label>
+            <div class="color-row">
+              <input type="color" id="st-heroBg-picker" value="#2a3036" oninput="syncColor('st-heroBg')">
+              <input type="text" id="st-heroBg" value="#2a3036" oninput="syncPicker('st-heroBg')">
+            </div>
+          </div>
+          <button class="btn-add" style="margin-top:8px;margin-bottom:0" onclick="saveSiteText('hero')"><i class="fas fa-save"></i> Save Hero Card</button>
+        </div>
+
+        <!-- QUOTE / GITHUB CARD -->
+        <div class="setup-card">
+          <h3><i class="fas fa-quote-left" style="color:var(--accent2)"></i> &nbsp;② Quote / GitHub Card <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">(wide2 — top right)</span></h3>
+          <div class="field"><label>Heading Text</label><input type="text" id="st-quoteTitle" placeholder="Code with clarity. Deploy with confidence."/></div>
+          <div class="field"><label>Link URL (GitHub or any)</label><input type="text" id="st-quoteLink" placeholder="https://github.com/ashishnxt"/></div>
+          <div class="field"><label>Background Color</label>
+            <div class="color-row">
+              <input type="color" id="st-quoteBg-picker" value="#800000" oninput="syncColor('st-quoteBg')">
+              <input type="text" id="st-quoteBg" value="#800000" oninput="syncPicker('st-quoteBg')">
+            </div>
+          </div>
+          <button class="btn-add" style="margin-top:8px;margin-bottom:0" onclick="saveSiteText('quote')"><i class="fas fa-save"></i> Save Quote Card</button>
+        </div>
+
+        <!-- HELLO BOX -->
+        <div class="setup-card">
+          <h3><i class="fas fa-hand-wave" style="color:var(--accent2)"></i> &nbsp;③ Hello Box <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">(small white box)</span></h3>
+          <div class="field"><label>Greeting / Title</label><input type="text" id="st-helloTitle" placeholder="Hello 👋"/></div>
+          <div class="field"><label>Description Text</label><textarea id="st-helloText" rows="3" placeholder="I'm Ashish — a DevOps-driven developer…"></textarea></div>
+          <button class="btn-add" style="margin-top:8px;margin-bottom:0" onclick="saveSiteText('hello')"><i class="fas fa-save"></i> Save Hello Box</button>
+        </div>
+
+        <!-- ABOUT / BIO CARD -->
+        <div class="setup-card">
+          <h3><i class="fas fa-user" style="color:var(--accent2)"></i> &nbsp;④ About / Bio Card <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">(big-2 full-width card)</span></h3>
+          <div class="field"><label>Heading</label><input type="text" id="st-aboutTitle" placeholder="Code, Cloud &amp; Creativity"/></div>
+          <div class="field"><label>Paragraph 1</label><textarea id="st-aboutP1" rows="3" placeholder="I'm Ashish Sharma — a DevOps-driven developer…"></textarea></div>
+          <div class="field"><label>Paragraph 2</label><textarea id="st-aboutP2" rows="3" placeholder="From CI/CD pipelines…"></textarea></div>
+          <div class="field"><label>Background Color</label>
+            <div class="color-row">
+              <input type="color" id="st-aboutBg-picker" value="#798645" oninput="syncColor('st-aboutBg')">
+              <input type="text" id="st-aboutBg" value="#798645" oninput="syncPicker('st-aboutBg')">
+            </div>
+          </div>
+          <button class="btn-add" style="margin-top:8px;margin-bottom:0" onclick="saveSiteText('about')"><i class="fas fa-save"></i> Save About Card</button>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="setup-card">
+          <h3><i class="fas fa-link" style="color:var(--accent2)"></i> &nbsp;⑤ Social Links <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">(icons in social box + footer)</span></h3>
+          <div class="field-row">
+            <div class="field"><label>Email</label><input type="email" id="st-email" placeholder="ashishaxm@gmail.com"/></div>
+            <div class="field"><label>Phone (tel: link)</label><input type="text" id="st-phone" placeholder="+918218869389"/></div>
+            <div class="field"><label>GitHub URL</label><input type="text" id="st-github" placeholder="https://github.com/ashishnxt/"/></div>
+            <div class="field"><label>LinkedIn URL</label><input type="text" id="st-linkedin" placeholder="https://linkedin.com/in/…"/></div>
+          </div>
+          <button class="btn-add" style="margin-top:8px;margin-bottom:0" onclick="saveSiteText('social')"><i class="fas fa-save"></i> Save Social Links</button>
+        </div>
+      </div>
+
+      <!-- PROFILE IMAGE -->
+      <div class="tab-content" id="tab-profile-image">
+        <div class="page-header"><h2>Profile Image</h2><p>Photo shown in the About / Bio section</p></div>
+
+        <!-- Current image preview -->
+        <div id="profileImgCurrentCard" class="resume-current" style="display:none;margin-bottom:16px">
+          <img id="profileImgPreview" src="" alt="Profile" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border)"/>
+          <div class="resume-current-info">
+            <div class="resume-current-name">Current Profile Photo</div>
+            <div class="resume-current-url" id="profileImgUrl" style="word-break:break-all"></div>
+          </div>
+          <button class="btn-sm btn-delete" style="flex:0;width:36px;" onclick="deleteProfileImage()"><i class="fas fa-trash"></i></button>
+        </div>
+
+        <div class="setup-card">
+          <h3><i class="fas fa-upload" style="color:var(--blue)"></i> Upload Profile Photo</h3>
+          <div class="upload-zone" id="profileUploadZone"
+            onclick="document.getElementById('profileFileInput').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--accent2)'"
+            ondragleave="this.style.borderColor='var(--border)'"
+            ondrop="handleProfileDrop(event)">
+            <div id="profileUploadInner">
+              <i class="fas fa-user-circle" style="font-size:36px;color:var(--muted);display:block;margin-bottom:8px"></i>
+              <div style="font-size:13px;color:var(--muted)">Click or drag your photo here</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">JPG, PNG, WEBP — max 10MB</div>
+            </div>
+            <input type="file" id="profileFileInput" accept="image/*" style="display:none" onchange="handleProfileSelect(this)"/>
+          </div>
+          <div class="progress-wrap" id="profileProgress">
+            <div class="progress-label"><span id="profileProgName">Uploading…</span><span id="profileProgPct">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar" id="profileProgBar"></div></div>
+          </div>
+          <div style="margin-top:12px">
+            <p style="font-size:11px;color:var(--muted);margin-bottom:8px">— OR paste image URL —</p>
+            <input type="text" id="profileUrlInput" placeholder="https://…" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:12px;outline:none;"/>
+            <button onclick="saveProfileUrl()" style="margin-top:8px;width:100%;padding:10px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
+              <i class="fas fa-save"></i> Save Image URL
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESUME -->
+      <div class="tab-content" id="tab-resume">
+        <div class="page-header"><h2>Resume</h2><p>PDF shown as download button on the portfolio</p></div>
+        <div id="resumeCurrentCard" style="display:none" class="resume-current">
+          <i class="fas fa-file-pdf"></i>
+          <div class="resume-current-info">
+            <div class="resume-current-name" id="resumeFileName">resume.pdf</div>
+            <div class="resume-current-url" id="resumeFileUrl"></div>
+          </div>
+          <button class="btn-sm btn-delete" style="flex:0;width:36px;" onclick="deleteResume()"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="setup-card">
+          <h3><i class="fas fa-star" style="color:var(--green)"></i> Recommended: Use Google Drive (100% reliable, free)</h3>
+          <div style="font-size:12px;color:var(--muted);line-height:1.9;margin-bottom:14px">
+            1. Upload your PDF to Google Drive<br>
+            2. Right-click → Share → change to <strong style="color:var(--text)">Anyone with the link</strong><br>
+            3. Copy the share link — it looks like: <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">https://drive.google.com/file/d/FILE_ID/view</code><br>
+            4. Paste it below and click Save — the code automatically converts it to a direct download link
+          </div>
+          <input type="text" id="resumeUrlInput" placeholder="https://drive.google.com/file/d/…/view  OR any direct PDF URL"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 13px;color:var(--text);font-family:inherit;font-size:12px;outline:none;margin-bottom:8px;"/>
+          <button onclick="saveResumeUrl()" style="width:100%;padding:11px;background:var(--green);border:none;border-radius:7px;color:#000;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
+            <i class="fas fa-save"></i> Save Resume URL
+          </button>
+        </div>
+
+        <div class="setup-card">
+          <h3><i class="fas fa-upload" style="color:var(--blue)"></i> Alternative: Upload PDF via Cloudinary</h3>
+          <div style="padding:10px 13px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;font-size:12px;color:var(--yellow);line-height:1.7;margin-bottom:14px">
+            <strong>⚠ After uploading</strong>, go to <strong>Cloudinary Media Library → portfolio/resume folder → select the file → ⋮ menu → Manage Access</strong> → set to <strong>Public</strong> and save. Otherwise the file returns 401.
+          </div>
+          <div id="resumeUploadZone" class="upload-zone" onclick="document.getElementById('resumeFileInput').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--accent2)'"
+            ondragleave="this.style.borderColor='var(--border)'"
+            ondrop="handleResumeDrop(event)">
+            <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--muted);display:block;margin-bottom:8px"></i>
+            <div style="font-size:13px;color:var(--muted)">Click or drag PDF here to upload to Cloudinary</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">PDF only — max 10MB</div>
+            <input type="file" id="resumeFileInput" accept=".pdf,application/pdf" style="display:none" onchange="handleResumeSelect(this)"/>
+          </div>
+          <div class="progress-wrap" id="resumeProgress">
+            <div class="progress-label"><span id="resumeProgName">Uploading…</span><span id="resumeProgPct">0%</span></div>
+            <div class="progress-bar-bg"><div class="progress-bar" id="resumeProgBar"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FIREBASE SETUP -->
+      <div class="tab-content" id="tab-firebase-setup">
+        <div class="page-header"><h2>Firebase Setup</h2><p>Firestore database configuration</p></div>
+
+        <div class="setup-card" style="margin-bottom:14px;border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)">
+          <h3 style="margin-bottom:8px"><i class="fas fa-check-circle" style="color:var(--green)"></i> Config is hardcoded in this file</h3>
+          <p style="font-size:12px;color:var(--muted);line-height:1.7">
+            Your Firebase config is baked into <code style="background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px">admin.html</code> and works on every device automatically — no re-entering needed.
+            The form below lets you override with different values if ever needed.
+          </p>
+        </div>
+        <div class="setup-card">
+          <h3><span class="step-num">1</span> Create Firebase Project</h3>
+          <p>Go to <strong>console.firebase.google.com</strong> → Add project → Firestore Database → Create in test mode.</p>
+        </div>
+        <div class="setup-card">
+          <h3><span class="step-num">2</span> Get Config & Enter Below</h3>
+          <p>Project Settings → Your apps → Web → copy the config values.</p>
+          <div class="config-form" style="margin-top:14px">
+            <div class="field"><label>API Key</label><input type="text" id="cfg-apiKey" placeholder="AIzaSy…"/></div>
+            <div class="field"><label>Auth Domain</label><input type="text" id="cfg-authDomain" placeholder="project.firebaseapp.com"/></div>
+            <div class="field"><label>Project ID</label><input type="text" id="cfg-projectId" placeholder="my-portfolio-123"/></div>
+            <div class="field"><label>Storage Bucket</label><input type="text" id="cfg-storageBucket" placeholder="project.appspot.com"/></div>
+            <div class="field"><label>Messaging Sender ID</label><input type="text" id="cfg-messagingSenderId" placeholder="123456789"/></div>
+            <div class="field"><label>App ID</label><input type="text" id="cfg-appId" placeholder="1:123:web:abc"/></div>
+            <div id="fbLockRow" class="lock-row" style="grid-column:span 2">
+              <span><i class="fas fa-lock" style="color:var(--yellow);margin-right:6px"></i> Lock Firebase config (prevent accidental changes)</span>
+              <label class="toggle-switch"><input type="checkbox" id="fbLockToggle" onchange="toggleLock('firebase')"/><span class="toggle-slider"></span></label>
+            </div>
+            <button class="btn-save-config" id="fbSaveBtn" onclick="saveFirebaseConfig()"><i class="fas fa-save"></i> Save & Connect</button>
+            <div class="config-status" id="config-status"></div>
+          </div>
+        </div>
+        <div class="setup-card">
+          <h3><span class="step-num">3</span> Firestore Rules — paste these (auth-secured)</h3>
+          <p style="margin-bottom:10px">These rules allow <strong>anyone to read</strong> (your portfolio visitors) but only <strong>authenticated users to write</strong> (only you, after signing in to admin).</p>
+          <div class="code-block">rules_version = '2';<br>service cloud.firestore {<br>&nbsp;&nbsp;match /databases/{database}/documents {<br>&nbsp;&nbsp;&nbsp;&nbsp;match /{document=**} {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read: if true;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow write: if request.auth != null;<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</div>
+          <button onclick="copyFirestoreRules()" style="background:var(--blue);border:none;border-radius:5px;padding:7px 14px;color:#fff;font-size:11px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;margin-top:8px"><i class="fas fa-copy"></i> Copy Rules</button>
+          <div style="margin-top:10px;padding:10px 13px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7">
+            <strong style="color:var(--green)">✓ Secure:</strong> <code style="background:var(--bg);padding:1px 5px;border-radius:3px">request.auth != null</code> means only users signed in via Firebase Auth can write. Random visitors cannot modify your portfolio data even if they find your Firebase config.
+          </div>
+        </div>
+      </div>
+
+      <!-- CLOUDINARY SETUP -->
+      <div class="tab-content" id="tab-cloudinary-setup">
+        <div class="page-header"><h2>Cloudinary Setup</h2><p>Free image hosting — 25GB, no credit card</p></div>
+
+        <!-- Cloud name already set -->
+        <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:12px;line-height:1.8;display:flex;align-items:center;gap:10px">
+          <i class="fas fa-check-circle" style="color:var(--green);font-size:16px;flex-shrink:0"></i>
+          <div><strong style="color:var(--green)">Cloud Name hardcoded:</strong> <code style="background:var(--bg);padding:2px 7px;border-radius:4px;font-size:12px">dsya7mkkv</code> — already set in the file, works on every device.</div>
+        </div>
+
+        <div class="setup-card">
+          <h3><i class="fas fa-key" style="color:var(--yellow)"></i> Only this needs setting: Upload Preset</h3>
+          <p style="margin-bottom:12px">Go to <strong>Cloudinary Dashboard → Settings (⚙) → Upload tab → Upload presets → Add preset</strong> → set Signing Mode to <strong style="color:var(--green)">Unsigned</strong> → Save → copy preset name → paste below.</p>
+          <div class="config-form" style="margin-top:12px">
+            <div class="field" style="grid-column:span 2">
+              <label>Cloud Name <span style="color:var(--green);font-size:10px">(already set)</span></label>
+              <input type="text" id="cld-cloudName" value="dsya7mkkv" readonly style="opacity:0.6;cursor:not-allowed"/>
+            </div>
+            <div class="field" style="grid-column:span 2">
+              <label>Upload Preset (Unsigned) <span style="color:var(--accent2);font-size:10px">← only this needs filling</span></label>
+              <input type="text" id="cld-uploadPreset" placeholder="e.g. portfolio_unsigned"/>
+            </div>
+            <div id="cldLockRow" class="lock-row" style="grid-column:span 2">
+              <span><i class="fas fa-lock" style="color:var(--yellow);margin-right:6px"></i> Lock Cloudinary config</span>
+              <label class="toggle-switch"><input type="checkbox" id="cldLockToggle" onchange="toggleLock('cloudinary')"/><span class="toggle-slider"></span></label>
+            </div>
+            <button class="btn-save-config" id="cldSaveBtn" onclick="saveCloudinaryConfig()"><i class="fas fa-save"></i> Save Cloudinary Config</button>
+            <div class="config-status" id="cld-config-status" style="grid-column:span 2"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end main -->
+  </div><!-- end layout -->
+
+  <!-- Sidebar overlay — outside layout grid so it doesn't steal a grid column -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+</div><!-- end adminPanel -->
+<!-- CARD BUILDER MODAL — at body level, outside adminPanel so it's never hidden by tab system -->
+<div class="modal-overlay" id="cbModalOverlay">
+  <div class="modal" style="max-width:600px" id="cbModalInner">
+    <div class="modal-header">
+      <h3 id="cbModalTitle">Add New Card</h3>
+      <button class="modal-close" onclick="closeCbModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <!-- STEP 1: TYPE SELECTION -->
+    <div id="cbStep1">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Choose what type of card to add:</p>
+      <div class="type-grid">
+        <div class="type-option" onclick="selectCardType('image-slider',this)"><i class="fas fa-images"></i><span>Image Slider</span></div>
+        <div class="type-option" onclick="selectCardType('text-icon',this)"><i class="fas fa-align-left"></i><span>Text Card</span></div>
+        <div class="type-option" onclick="selectCardType('quote-banner',this)"><i class="fas fa-quote-left"></i><span>Quote / Banner</span></div>
+        <div class="type-option" onclick="selectCardType('skills-cloud',this)"><i class="fas fa-tags"></i><span>Skills Cloud</span></div>
+        <div class="type-option" onclick="selectCardType('icon-slider',this)"><i class="fas fa-cogs"></i><span>Icon Slider</span></div>
+        <div class="type-option" onclick="selectCardType('project-testimonial',this)"><i class="fas fa-folder-open"></i><span>Projects</span></div>
+      </div>
+    </div>
+    <!-- STEP 2: SIZE + CONFIG -->
+    <div id="cbStep2" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:rgba(196,27,15,.1);border:1px solid rgba(196,27,15,.3);border-radius:8px">
+        <i id="cbSelectedTypeIcon" class="fas fa-images" style="color:var(--accent2)"></i>
+        <span id="cbSelectedTypeLabel" style="font-size:12px;font-weight:600;font-family:'Syne',sans-serif">Image Slider</span>
+        <button onclick="cbBack()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:5px;color:var(--muted);cursor:pointer;font-size:11px;font-family:inherit;padding:4px 10px">← Change type</button>
+      </div>
+      <div class="field">
+        <label>Card Size</label>
+        <div class="size-grid" id="cbSizeGrid">
+          <div class="size-opt selected" data-size="wide2" onclick="selectSize('wide2',this)"><span style="height:24px;display:block;background:var(--border);border-radius:3px;margin-bottom:6px"></span>Half Width</div>
+          <div class="size-opt" data-size="wide" onclick="selectSize('wide',this)"><span style="height:24px;display:block;background:var(--border);border-radius:3px;margin-bottom:6px"></span>Half Width 2</div>
+          <div class="size-opt" data-size="big" onclick="selectSize('big',this)"><span style="height:48px;display:block;background:var(--border);border-radius:3px;margin-bottom:6px"></span>Half × Tall</div>
+          <div class="size-opt" data-size="big-2" onclick="selectSize('big-2',this)"><span style="height:14px;display:block;background:var(--border);border-radius:3px;margin-bottom:6px"></span>Full Width</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Background Color</label>
+        <div class="color-row">
+          <input type="color" id="cb-bgColor-picker" value="#ffffff" oninput="syncColor('cb-bgColor')">
+          <input type="text" id="cb-bgColor" value="#ffffff" oninput="syncPicker('cb-bgColor')">
+        </div>
+        <div class="color-swatches">
+          <div class="swatch" style="background:#ffffff;border:1px solid #ddd" onclick="setSwatch('cb-bgColor','#ffffff')"></div>
+          <div class="swatch" style="background:#2a3036" onclick="setSwatch('cb-bgColor','#2a3036')"></div>
+          <div class="swatch" style="background:#800000" onclick="setSwatch('cb-bgColor','#800000')"></div>
+          <div class="swatch" style="background:#798645" onclick="setSwatch('cb-bgColor','#798645')"></div>
+          <div class="swatch" style="background:#d1ccc5" onclick="setSwatch('cb-bgColor','#d1ccc5')"></div>
+          <div class="swatch" style="background:#40c2a6" onclick="setSwatch('cb-bgColor','#40c2a6')"></div>
+          <div class="swatch" style="background:#1a1a2e" onclick="setSwatch('cb-bgColor','#1a1a2e')"></div>
+          <div class="swatch" style="background:#948979" onclick="setSwatch('cb-bgColor','#948979')"></div>
+        </div>
+      </div>
+      <div id="cbConfigFields"></div>
+    </div>
+    <div class="modal-actions" id="cbModalActions" style="display:none">
+      <button class="btn-cancel" onclick="closeCbModal()">Cancel</button>
+      <button class="btn-primary" id="cbSaveBtn" onclick="saveCbCard()"><i class="fas fa-save"></i> <span id="cbSaveBtnText">Add Card</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Item</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="modalForm"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="saveBtn" onclick="saveItem()"><i class="fas fa-save"></i> <span id="saveBtnText">Save</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc, getDocs }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  window._fb = {
+    initializeApp, getFirestore,
+    collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc, getDocs,
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  };
+</script>
+
+<script>
+// ════════════════════════════════════════
+// FIREBASE CONFIG (public — safe to be in code)
+// The apiKey is NOT a secret — it just identifies your project.
+// Security comes from Firebase Auth + Firestore Rules.
+// ════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyD7n6nnFH8IueDXJ8XXa-JNMafT0DmMsEg",
+  authDomain:        "my-portfolio-89d58.firebaseapp.com",
+  projectId:         "my-portfolio-89d58",
+  storageBucket:     "my-portfolio-89d58.firebasestorage.app",
+  messagingSenderId: "465798455129",
+  appId:             "1:465798455129:web:c7c9070f113741cb9c7648"
+};
+
+// Cloudinary config (public — unsigned upload preset is designed to be public)
+// cloudName is visible in all your image URLs so safe to hardcode
+// uploadPreset: get from Cloudinary Dashboard → Settings → Upload → Upload Presets
+const CLOUDINARY_CONFIG = {
+  cloudName:    "dsya7mkkv",
+  uploadPreset: "firestore"  // ← only this needs updating
+};
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let db = null;
+let pendingFile = null;
+let editingId = null;
+let editingCol = null;
+let unsubs = {};
+let data = {};
+const COLS = ['ai-slides','devops-slides','ui-slides','projects','skills','devops-skills','frontend-skills'];
+
+let CLOUD_NAME = localStorage.getItem('cld-cloud-name') || CLOUDINARY_CONFIG.cloudName || '';
+let UPLOAD_PRESET = localStorage.getItem('cld-upload-preset') || CLOUDINARY_CONFIG.uploadPreset || '';
+
+// ════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+// FIREBASE AUTH — Login / Logout / Init
+// ════════════════════════════════════════
+let firebaseApp = null;
+let firebaseAuth = null;
+
+function getFirebaseConfig() {
+  // Priority: localStorage override → FIREBASE_CONFIG constant
+  const saved = localStorage.getItem('portfolio-fb-config');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return FIREBASE_CONFIG;
+}
+
+function isConfigured(cfg) {
+  return cfg && cfg.apiKey && !cfg.apiKey.startsWith('PASTE_') && cfg.projectId && !cfg.projectId.startsWith('PASTE_');
+}
+
+// Called on page load — init Firebase Auth directly since config is hardcoded
+function bootAuth() {
+  const cfg = getFirebaseConfig(); // localStorage override OR hardcoded FIREBASE_CONFIG
+  initFirebaseApp(cfg);
+}
+
+function initFirebaseApp(cfg) {
+  try {
+    const { initializeApp, getAuth, onAuthStateChanged } = window._fb;
+    firebaseApp  = initializeApp(cfg, 'admin-app');
+    firebaseAuth = getAuth(firebaseApp);
+    // Listen for auth state — auto-enter panel if already signed in
+    onAuthStateChanged(firebaseAuth, (user) => {
+      if (user) {
+        onLoginSuccess(user, cfg);
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('adminPanel').style.display  = 'none';
+      }
+    });
+  } catch(e) {
+    showLoginError('Firebase init failed: ' + e.message);
+  }
+}
+
+// saveSetupConfig removed — config now hardcoded in FIREBASE_CONFIG
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) { showLoginError('Enter your email and password.'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:8px"></i>Signing in…';
+
+  try {
+    const { signInWithEmailAndPassword } = window._fb;
+    await signInWithEmailAndPassword(firebaseAuth, email, pass);
+    // onAuthStateChanged will fire and call onLoginSuccess
+  } catch(e) {
+    let msg = 'Sign in failed.';
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') msg = 'Wrong email or password.';
+    else if (e.code === 'auth/too-many-requests') msg = 'Too many attempts. Try again later.';
+    else if (e.code === 'auth/network-request-failed') msg = 'Network error. Check your connection.';
+    showLoginError(msg);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px"></i>Sign In';
+  }
+}
+
+function onLoginSuccess(user, cfg) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display  = 'block';
+  // Now init Firestore, cloudinary, etc.
+  initAdminPanel(cfg);
+}
+
+async function doLogout() {
+  const { signOut } = window._fb;
+  Object.values(unsubs).forEach(u=>u&&u());
+  try { await signOut(firebaseAuth); } catch(e) {}
+  document.getElementById('adminPanel').style.display  = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPass').value = '';
+  db = null;
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(()=>{ el.style.display='none'; }, 4000);
+}
+
+// ════════════════════════════════════════
+// INIT ADMIN PANEL (after successful login)
+// ════════════════════════════════════════
+function initAdminPanel(cfg) {
+  // Connect Firestore
+  const { getFirestore } = window._fb;
+  db = getFirestore(firebaseApp);
+  loadCfgFields(cfg);
+
+  // Update status indicators
+  document.getElementById('dbStatus').innerHTML = '<span style="color:var(--green)">● Connected</span>';
+  const ssDot = document.getElementById('sidebarStatusDot');
+  const ssTxt = document.getElementById('sidebarStatusText');
+  if (ssDot) ssDot.style.background = 'var(--green)';
+  if (ssTxt) { ssTxt.textContent = 'Connected'; ssTxt.style.color = 'var(--green)'; }
+  const dDot = document.getElementById('dash-firebase-dot');
+  const dSta = document.getElementById('dash-firebase-status');
+  if (dDot) dDot.style.background = 'var(--green)';
+  if (dSta) { dSta.textContent = 'Connected ✓'; dSta.style.color = 'var(--green)'; }
+
+  // Cloudinary: localStorage → CLOUDINARY_CONFIG constant
+  const cldName   = localStorage.getItem('cld-cloud-name')    || CLOUDINARY_CONFIG.cloudName    || '';
+  const cldPreset = localStorage.getItem('cld-upload-preset') || CLOUDINARY_CONFIG.uploadPreset || '';
+  if (cldName && !cldName.startsWith('PASTE_')) {
+    CLOUD_NAME = cldName; UPLOAD_PRESET = cldPreset;
+    if (!localStorage.getItem('cld-cloud-name')) {
+      localStorage.setItem('cld-cloud-name',    cldName);
+      localStorage.setItem('cld-upload-preset', cldPreset);
+    }
+    loadCloudinaryFields();
+  }
+
+  loadLockStates();
+  subscribeAll();
+  loadResume();
+  subscribeSiteText();
+  subscribeProfile();
+  subscribePageCards();
+}
+
+// ════════════════════════════════════════
+// FIREBASE
+// ════════════════════════════════════════
+// connectFirebase kept for legacy calls but now delegates to initAdminPanel
+function connectFirebase(config) {
+  if (db) {
+    // Already connected via auth — just show toast
+    showToast('Already connected!', 'success');
+    return;
+  }
+  try {
+    const { getFirestore } = window._fb;
+    db = getFirestore(firebaseApp || (() => { const {initializeApp}=window._fb; return initializeApp(config,'admin-fallback'); })());
+    showToast('Firestore connected!', 'success');
+  } catch(e) { showToast('Firebase error: ' + e.message, 'error'); }
+}
+
+function saveFirebaseConfig() {
+  if (isLocked('firebase')) { showToast('Firebase config is locked. Unlock first.', 'error'); return; }
+  const cfg = {
+    apiKey: v('cfg-apiKey'), authDomain: v('cfg-authDomain'),
+    projectId: v('cfg-projectId'), storageBucket: v('cfg-storageBucket'),
+    messagingSenderId: v('cfg-messagingSenderId'), appId: v('cfg-appId')
+  };
+  if (!cfg.apiKey || !cfg.projectId) { showToast('Fill in API Key and Project ID', 'error'); return; }
+  localStorage.setItem('portfolio-fb-config', JSON.stringify(cfg));
+  document.getElementById('config-status').textContent = '✓ Config saved — re-login to apply';
+  showToast('Config saved! It will apply on next login.', 'success');
+}
+
+function loadCfgFields(cfg) {
+  Object.keys(cfg).forEach(k => { const el=document.getElementById('cfg-'+k); if(el) el.value=cfg[k]; });
+}
+
+// ════════════════════════════════════════
+// CLOUDINARY
+// ════════════════════════════════════════
+function saveCloudinaryConfig() {
+  if (isLocked('cloudinary')) { showToast('Cloudinary config is locked. Unlock first.', 'error'); return; }
+  const name = document.getElementById('cld-cloudName').value.trim();
+  const preset = document.getElementById('cld-uploadPreset').value.trim();
+  if (!name || !preset) { showToast('Enter both Cloud Name and Upload Preset', 'error'); return; }
+  localStorage.setItem('cld-cloud-name', name);
+  localStorage.setItem('cld-upload-preset', preset);
+  CLOUD_NAME = name; UPLOAD_PRESET = preset;
+  document.getElementById('cld-config-status').textContent = '✓ Saved — image uploads ready';
+  showToast('Cloudinary configured!', 'success');
+}
+
+function loadCloudinaryFields() {
+  const n = localStorage.getItem('cld-cloud-name') || '';
+  const p = localStorage.getItem('cld-upload-preset') || '';
+  const nel = document.getElementById('cld-cloudName');
+  const pel = document.getElementById('cld-uploadPreset');
+  if (nel && n) nel.value = n;
+  if (pel && p) pel.value = p;
+  CLOUD_NAME = n; UPLOAD_PRESET = p;
+  if (n && p) { const s=document.getElementById('cld-config-status'); if(s) s.textContent='✓ Configured'; }
+}
+
+// ════════════════════════════════════════
+// LOCK / UNLOCK
+// ════════════════════════════════════════
+function toggleLock(type) {
+  const key = 'lock-' + type;
+  const toggle = document.getElementById(type==='firebase'?'fbLockToggle':'cldLockToggle');
+  const saveBtn = document.getElementById(type==='firebase'?'fbSaveBtn':'cldSaveBtn');
+  const inputs = type==='firebase'
+    ? ['cfg-apiKey','cfg-authDomain','cfg-projectId','cfg-storageBucket','cfg-messagingSenderId','cfg-appId']
+    : ['cld-cloudName','cld-uploadPreset'];
+  const locked = toggle.checked;
+  localStorage.setItem(key, locked ? '1' : '0');
+  inputs.forEach(id => { const el=document.getElementById(id); if(el){ el.disabled=locked; el.style.opacity=locked?'0.5':'1'; }});
+  if (saveBtn) { saveBtn.disabled=locked; saveBtn.style.opacity=locked?'0.5':'1'; }
+  showToast(locked ? type+' config locked 🔒' : type+' config unlocked 🔓', 'success');
+}
+
+function isLocked(type) { return localStorage.getItem('lock-'+type)==='1'; }
+
+function loadLockStates() {
+  ['firebase','cloudinary'].forEach(type => {
+    const locked = isLocked(type);
+    const toggle = document.getElementById(type==='firebase'?'fbLockToggle':'cldLockToggle');
+    if (toggle) toggle.checked = locked;
+    if (locked) {
+      const inputs = type==='firebase'
+        ? ['cfg-apiKey','cfg-authDomain','cfg-projectId','cfg-storageBucket','cfg-messagingSenderId','cfg-appId']
+        : ['cld-cloudName','cld-uploadPreset'];
+      const saveBtn = document.getElementById(type==='firebase'?'fbSaveBtn':'cldSaveBtn');
+      inputs.forEach(id => { const el=document.getElementById(id); if(el){ el.disabled=true; el.style.opacity='0.5'; }});
+      if (saveBtn) { saveBtn.disabled=true; saveBtn.style.opacity='0.5'; }
+    }
+  });
+}
+
+// ════════════════════════════════════════
+// REALTIME SUBSCRIBE
+// ════════════════════════════════════════
+function subscribeAll() {
+  const { collection, onSnapshot } = window._fb;
+  COLS.forEach(col => {
+    if (unsubs[col]) unsubs[col]();
+    unsubs[col] = onSnapshot(collection(db, col), snap => {
+      data[col] = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderGrid(col);
+      updateCounts();
+    });
+  });
+}
+
+// ════════════════════════════════════════
+// RENDER GRIDS
+// ════════════════════════════════════════
+function renderGrid(col) {
+  const grid = document.getElementById('grid-'+col);
+  if (!grid) return;
+  const items = data[col] || [];
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state"><i class="fas fa-layer-group"></i><p>No items yet. Click "+ Add" to create one.</p></div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => {
+    const isSkill = col==='skills'||col==='devops-skills'||col==='frontend-skills';
+    const isProject = col==='projects';
+    const imgHtml = item.iconUrl||item.imgUrl
+      ? `<div class="slide-card-img"><img src="${item.iconUrl||item.imgUrl}" alt="" onerror="this.parentNode.innerHTML='<i class=\\"fas fa-image\\" style=\\"font-size:24px\\"></i>'"/></div>`
+      : `<div class="slide-card-img"><i class="fas fa-${isSkill?'code':isProject?'folder':'image'}" style="font-size:24px"></i></div>`;
+    const title = item.name || item.title || 'Untitled';
+    const desc  = item.description ? item.description.substring(0,80)+(item.description.length>80?'…':'') : '';
+    return `<div class="slide-card">
+      ${imgHtml}
+      <div class="slide-card-body">
+        <div class="slide-card-tag">${col}</div>
+        <div class="slide-card-title">${title}</div>
+        ${desc?`<div class="slide-card-desc">${desc}</div>`:''}
+        <div class="slide-card-actions">
+          <button class="btn-sm btn-edit" onclick="openModal('${col}','${item.id}')"><i class="fas fa-edit"></i> Edit</button>
+          <button class="btn-sm btn-delete" onclick="deleteItem('${col}','${item.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateCounts() {
+  COLS.forEach(col => {
+    const cnt = document.getElementById('cnt-'+col);
+    if (cnt) cnt.textContent = (data[col]||[]).length;
+  });
+  const set = (id, col) => { const el=document.getElementById(id); if(el) el.textContent=(data[col]||[]).length; };
+  set('s-ai','ai-slides'); set('s-devops','devops-slides'); set('s-ui','ui-slides'); set('s-proj','projects');
+  // Dashboard extra
+  const ds = document.getElementById('dash-devops-skills');   if(ds) ds.textContent=(data['devops-skills']||[]).length+' icons';
+  const fs = document.getElementById('dash-frontend-skills'); if(fs) fs.textContent=(data['frontend-skills']||[]).length+' icons';
+  const sk = document.getElementById('dash-skills');          if(sk) sk.textContent=(data['skills']||[]).length+' tags';
+  const pc = document.getElementById('dash-cards');           if(pc) { const cnt=document.getElementById('cnt-page-cards'); pc.textContent=(cnt?cnt.textContent:'0')+' cards'; }
+  // Firebase connected status on dashboard
+  const dot = document.getElementById('dash-firebase-dot');
+  const sta = document.getElementById('dash-firebase-status');
+  if (db) {
+    if(dot) dot.style.background='var(--green)';
+    if(sta) sta.textContent='Connected ✓';
+    if(sta) sta.style.color='var(--green)';
+  }
+}
+
+// ════════════════════════════════════════
+// MODAL — SMART FORM BUILDER
+// ════════════════════════════════════════
+const SWATCHES = ['#40c2a6','#7c0a02','#800000','#2a3036','#798645','#d1ccc5','#1a1a2e','#16213e','#0f3460','#533483'];
+
+function colorField(fieldId, label, value) {
+  const sw = SWATCHES.map(c=>`<div class="swatch" style="background:${c}" onclick="setSwatch('${fieldId}','${c}')"></div>`).join('');
+  return `<div class="field">
+    <label>${label}</label>
+    <div class="color-row">
+      <input type="color" id="${fieldId}-picker" value="${value||'#40c2a6'}" oninput="syncColor('${fieldId}')">
+      <input type="text" id="${fieldId}" placeholder="#40c2a6" value="${value||''}" oninput="syncPicker('${fieldId}')">
+    </div>
+    <div class="color-swatches">${sw}</div>
+  </div>`;
+}
+
+function imgUploadField(existingUrl) {
+  const preview = existingUrl
+    ? `<img src="${existingUrl}" style="max-height:100px;max-width:100%;border-radius:6px;margin-bottom:8px;display:block;margin:0 auto 8px"/>`
+    : `<i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--muted);display:block;margin-bottom:8px"></i>`;
+  return `<div class="field">
+    <label>Image</label>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='var(--accent2)'"
+      ondragleave="this.style.borderColor='var(--border)'"
+      ondrop="handleDrop(event)">
+      <div id="uploadZoneInner">${preview}
+        <div style="font-size:12px;color:var(--muted)">${existingUrl?'Click or drag to replace':'Click or drag image here'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">JPG, PNG, WEBP — max 10MB</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(this)"/>
+    </div>
+    <div class="progress-wrap" id="uploadProgress">
+      <div class="progress-label"><span id="uploadFileName">Uploading…</span><span id="uploadPct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar" id="uploadBar"></div></div>
+    </div>
+    <div class="divider"><span>OR paste URL</span></div>
+    <input type="text" id="f-imgUrl" placeholder="https://…" value="${existingUrl||''}" oninput="updatePreviewFromUrl(this.value)"/>
+  </div>`;
+}
+
+function openModal(col, id=null) {
+  if (!db) { showToast('Connect Firebase first', 'error'); return; }
+  editingCol = col; editingId = id; pendingFile = null;
+  const isEdit = !!id;
+  const ex = isEdit ? (data[col]||[]).find(i=>i.id===id)||{} : {};
+  document.getElementById('modalTitle').textContent = isEdit ? 'Edit '+colLabel(col) : 'Add '+colLabel(col);
+  document.getElementById('saveBtnText').textContent = isEdit ? 'Update' : 'Save';
+
+  let html = '';
+
+  if (col==='projects') {
+    html = `
+      <div class="field"><label>Project Name</label><input type="text" id="f-name" value="${ex.name||''}"/></div>
+      <div class="field"><label>Description</label><textarea id="f-description">${ex.description||''}</textarea></div>
+      <div class="field"><label>Order (lower = first)</label><input type="number" id="f-order" value="${ex.order||0}"/></div>`;
+  } else if (['skills','devops-skills','frontend-skills'].includes(col)) {
+    html = `
+      <div class="field"><label>Skill / Tool Name</label><input type="text" id="f-name" value="${ex.name||''}"/></div>
+      ${imgUploadField(ex.iconUrl||'')}
+      <div class="field"><label>Order</label><input type="number" id="f-order" value="${ex.order||0}"/></div>`;
+    // remap imgUrl field to iconUrl for skills
+  } else {
+    // slides
+    html = `
+      <div class="field"><label>Title</label><input type="text" id="f-title" value="${ex.title||''}"/></div>
+      <div class="field"><label>Description</label><textarea id="f-description">${ex.description||''}</textarea></div>
+      ${imgUploadField(ex.imgUrl||'')}
+      <div class="field-row">
+        ${colorField('f-bgColor','Background Color',ex.bgColor||'')}
+        <div class="field"><label>Text Color</label>
+          <select id="f-textColor">
+            <option value="dark" ${(ex.textColor||'dark')==='dark'?'selected':''}>Dark (default)</option>
+            <option value="light" ${ex.textColor==='light'?'selected':''}>Light (white)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Order (lower = first)</label><input type="number" id="f-order" value="${ex.order||0}"/></div>`;
+  }
+
+  document.getElementById('modalForm').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null; editingCol = null; pendingFile = null;
+}
+
+async function saveItem() {
+  if (!db) { showToast('Firebase not connected', 'error'); return; }
+  const { collection, addDoc, updateDoc, doc } = window._fb;
+  const btn = document.getElementById('saveBtnText');
+  const orig = btn.textContent;
+  btn.textContent = 'Saving…';
+  document.getElementById('saveBtn').disabled = true;
+
+  try {
+    const col = editingCol;
+    let payload = {};
+
+    if (col==='projects') {
+      payload = { name:v('f-name'), description:v('f-description'), order:+v('f-order')||0 };
+    } else if (['skills','devops-skills','frontend-skills'].includes(col)) {
+      let iconUrl = v('f-imgUrl');
+      if (pendingFile) { btn.textContent='Uploading…'; iconUrl = await uploadToCloudinary(pendingFile, col); pendingFile=null; }
+      payload = { name:v('f-name'), iconUrl, order:+v('f-order')||0 };
+    } else {
+      let imgUrl = v('f-imgUrl');
+      if (pendingFile) { btn.textContent='Uploading…'; imgUrl = await uploadToCloudinary(pendingFile, col); pendingFile=null; }
+      payload = { title:v('f-title'), description:v('f-description'), imgUrl, bgColor:v('f-bgColor'), textColor:v('f-textColor'), order:+v('f-order')||0 };
+    }
+
+    if (editingId) {
+      await updateDoc(doc(db, col, editingId), payload);
+      showToast('Updated!', 'success');
+    } else {
+      await addDoc(collection(db, col), payload);
+      showToast('Added!', 'success');
+    }
+    closeModal();
+  } catch(e) {
+    showToast('Error: '+e.message, 'error');
+  } finally {
+    btn.textContent = orig;
+    document.getElementById('saveBtn').disabled = false;
+  }
+}
+
+async function deleteItem(col, id) {
+  if (!confirm('Delete this item?')) return;
+  const { deleteDoc, doc } = window._fb;
+  try { await deleteDoc(doc(db, col, id)); showToast('Deleted.', 'success'); }
+  catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+// ════════════════════════════════════════
+// IMAGE UPLOAD — CLOUDINARY
+// ════════════════════════════════════════
+function handleFileSelect(input) { if (input.files?.[0]) previewFile(input.files[0]); }
+
+function handleDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('uploadZone');
+  if (zone) zone.style.borderColor = 'var(--border)';
+  const f = e.dataTransfer.files[0];
+  if (f?.type.startsWith('image/')) previewFile(f);
+  else showToast('Please drop an image file', 'error');
+}
+
+function previewFile(file) {
+  if (file.size > 10*1024*1024) { showToast('Max 10MB', 'error'); return; }
+  pendingFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const inner = document.getElementById('uploadZoneInner');
+    if (inner) inner.innerHTML = `<img src="${e.target.result}" style="max-height:100px;max-width:100%;border-radius:6px;margin-bottom:8px;display:block;margin:0 auto 8px"/>
+      <div style="font-size:12px;color:var(--green)"><i class="fas fa-check-circle"></i> ${file.name} — ready</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">Click to change</div>`;
+    const urlInput = document.getElementById('f-imgUrl');
+    if (urlInput) urlInput.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function updatePreviewFromUrl(url) {
+  if (!url) return;
+  pendingFile = null;
+  const inner = document.getElementById('uploadZoneInner');
+  if (inner) inner.innerHTML = `<img src="${url}" style="max-height:100px;max-width:100%;border-radius:6px;margin-bottom:8px;display:block;margin:0 auto 8px" onerror="this.style.display='none'"/>
+    <div style="font-size:12px;color:var(--muted)">Click or drag to replace</div>`;
+}
+
+async function uploadToCloudinary(file, folder='general') {
+  CLOUD_NAME = localStorage.getItem('cld-cloud-name') || CLOUD_NAME;
+  UPLOAD_PRESET = localStorage.getItem('cld-upload-preset') || UPLOAD_PRESET;
+  if (!CLOUD_NAME || !UPLOAD_PRESET) throw new Error('Cloudinary not configured — go to Settings → Cloudinary Setup');
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', UPLOAD_PRESET);
+  fd.append('folder', 'portfolio/'+folder);
+
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('uploadBar');
+  const pct  = document.getElementById('uploadPct');
+  const fname= document.getElementById('uploadFileName');
+  if (prog) prog.style.display='block';
+  if (fname) fname.textContent = file.name;
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${file.type.startsWith('video')?'video':'image'}/upload`);
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        const p = Math.round(e.loaded/e.total*100);
+        if (bar) bar.style.width=p+'%';
+        if (pct) pct.textContent=p+'%';
+      }
+    };
+    xhr.onload = () => {
+      if (prog) prog.style.display='none';
+      if (xhr.status===200) { const r=JSON.parse(xhr.responseText); resolve(r.secure_url); }
+      else { const err=JSON.parse(xhr.responseText); reject(new Error(err.error?.message||'Upload failed')); }
+    };
+    xhr.onerror = () => { if(prog) prog.style.display='none'; reject(new Error('Network error')); };
+    xhr.send(fd);
+  });
+}
+
+// ════════════════════════════════════════
+// RESUME
+// ════════════════════════════════════════
+function loadResume() {
+  if (!db) return;
+  const { doc, onSnapshot } = window._fb;
+  onSnapshot(doc(db,'site-settings','resume'), snap => {
+    const card = document.getElementById('resumeCurrentCard');
+    const nameEl = document.getElementById('resumeFileName');
+    const urlEl  = document.getElementById('resumeFileUrl');
+    const dashEl = document.getElementById('dash-resume');
+    if (snap.exists() && snap.data().url) {
+      if (card) card.style.display='flex';
+      if (nameEl) nameEl.textContent = snap.data().filename||'resume.pdf';
+      if (urlEl)  urlEl.textContent  = snap.data().url;
+      if (dashEl) { dashEl.textContent='Uploaded ✓'; dashEl.style.color='var(--green)'; }
+    } else {
+      if (card) card.style.display='none';
+      if (dashEl) { dashEl.textContent='Not set'; dashEl.style.color='var(--red)'; }
+    }
+  });
+}
+
+function handleResumeDrop(e) {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if (f?.type==='application/pdf'||f?.name.endsWith('.pdf')) handleResumeFile(f);
+  else showToast('Please drop a PDF file', 'error');
+}
+function handleResumeSelect(input) { if (input.files?.[0]) handleResumeFile(input.files[0]); }
+
+async function handleResumeFile(file) {
+  if (!db) { showToast('Connect Firebase first','error'); return; }
+  if (file.size > 10*1024*1024) { showToast('Max 10MB','error'); return; }
+  CLOUD_NAME = localStorage.getItem('cld-cloud-name')||CLOUD_NAME;
+  UPLOAD_PRESET = localStorage.getItem('cld-upload-preset')||UPLOAD_PRESET;
+  if (!CLOUD_NAME || !UPLOAD_PRESET) { showToast('Configure Cloudinary first','error'); return; }
+
+  const prog  = document.getElementById('resumeProgress');
+  const bar   = document.getElementById('resumeProgBar');
+  const pct   = document.getElementById('resumeProgPct');
+  const fname = document.getElementById('resumeProgName');
+  if (prog) prog.style.display='block';
+  if (fname) fname.textContent = file.name;
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    fd.append('folder', 'portfolio/resume');
+    // NOTE: PDFs must use the /raw/upload endpoint on Cloudinary free tier.
+    // The returned secure_url is publicly accessible when the asset access is set to Public
+    // in Cloudinary Media Library (which is the default for unsigned upload presets).
+
+    const url = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/upload`);
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const p = Math.round(e.loaded/e.total*100);
+          if (bar) bar.style.width=p+'%';
+          if (pct) pct.textContent=p+'%';
+        }
+      };
+      xhr.onload = () => {
+        if (prog) prog.style.display='none';
+        if (xhr.status===200) {
+          const res = JSON.parse(xhr.responseText);
+          // raw/upload returns a clean public URL — use it directly, no transformations
+          resolve(res.secure_url);
+        } else {
+          try {
+            const err = JSON.parse(xhr.responseText);
+            reject(new Error(err.error?.message || 'Upload failed (status '+xhr.status+')'));
+          } catch(e) { reject(new Error('Upload failed (status '+xhr.status+')')); }
+        }
+      };
+      xhr.onerror = () => { if(prog) prog.style.display='none'; reject(new Error('Network error during upload')); };
+      xhr.send(fd);
+    });
+
+    await saveResumeToFirestore(url, file.name);
+    showToast('Resume uploaded! ✓ Verify it\'s Public in Cloudinary Media Library if download fails.', 'success');
+  } catch(e) {
+    if (prog) prog.style.display='none';
+    showToast('Upload failed: '+e.message, 'error');
+  }
+}
+
+async function saveResumeUrl() {
+  if (!db) { showToast('Connect Firebase first','error'); return; }
+  let url = document.getElementById('resumeUrlInput').value.trim();
+  if (!url) { showToast('Enter a URL','error'); return; }
+
+  // Auto-convert Google Drive share link to direct download link
+  // Input:  https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  // Output: https://drive.google.com/uc?export=download&id=FILE_ID
+  const gdMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (gdMatch) {
+    const fileId = gdMatch[1];
+    url = `https://drive.google.com/uc?export=download&id=${fileId}`;
+    showToast('Google Drive link converted to direct download ✓', 'success');
+  }
+
+  await saveResumeToFirestore(url, 'resume.pdf');
+  showToast('Resume URL saved! Download button is now live on your portfolio.', 'success');
+  document.getElementById('resumeUrlInput').value = '';
+}
+
+async function saveResumeToFirestore(url, filename) {
+  const { doc, setDoc } = window._fb;
+  await setDoc(doc(db,'site-settings','resume'), { url, filename, updatedAt: Date.now() });
+}
+
+async function deleteResume() {
+  if (!confirm('Remove resume from portfolio?')) return;
+  const { doc, deleteDoc } = window._fb;
+  try {
+    await deleteDoc(doc(db,'site-settings','resume'));
+    showToast('Resume removed.','success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+// ════════════════════════════════════════
+// COLOR HELPERS
+// ════════════════════════════════════════
+function setSwatch(fieldId, color) {
+  const txt = document.getElementById(fieldId);
+  const pic = document.getElementById(fieldId+'-picker');
+  if (txt) txt.value = color;
+  if (pic) pic.value = color;
+}
+function syncColor(fieldId) {
+  const pic = document.getElementById(fieldId+'-picker');
+  const txt = document.getElementById(fieldId);
+  if (pic && txt) txt.value = pic.value;
+}
+function syncPicker(fieldId) {
+  const txt = document.getElementById(fieldId);
+  const pic = document.getElementById(fieldId+'-picker');
+  if (txt && pic && /^#[0-9a-fA-F]{6}$/.test(txt.value)) pic.value = txt.value;
+}
+
+// ── HAMBURGER / MOBILE SIDEBAR ──
+function toggleSidebar() {
+  const sidebar  = document.querySelector('.sidebar');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const btn      = document.getElementById('hamburgerBtn');
+  const isOpen   = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+  btn.innerHTML  = isOpen ? '<i class="fas fa-bars"></i>' : '<i class="fas fa-times"></i>';
+}
+function closeSidebar() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  document.getElementById('sidebarOverlay')?.classList.remove('open');
+  const btn = document.getElementById('hamburgerBtn');
+  if (btn) btn.innerHTML = '<i class="fas fa-bars"></i>';
+}
+
+// ── SHOW TAB ──
+function showTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+  // Auto-close sidebar on mobile after selecting a tab
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+function colLabel(col) {
+  const m = {'ai-slides':'AI Slide','devops-slides':'DevOps Slide','ui-slides':'UI Slide',
+    'projects':'Project','skills':'Skill','devops-skills':'DevOps Icon','frontend-skills':'Frontend Icon'};
+  return m[col]||col;
+}
+
+function v(id) { const el=document.getElementById(id); return el?el.value.trim():''; }
+
+function showToast(msg, type='success') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span class="toast-icon"><i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i></span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+
+function copyEmbedSnippet() {
+  // Read current values — from form fields or embedded constants
+  const cfg = {
+    apiKey:            v('cfg-apiKey')            || EMBEDDED_FIREBASE.apiKey,
+    authDomain:        v('cfg-authDomain')        || EMBEDDED_FIREBASE.authDomain,
+    projectId:         v('cfg-projectId')         || EMBEDDED_FIREBASE.projectId,
+    storageBucket:     v('cfg-storageBucket')     || EMBEDDED_FIREBASE.storageBucket,
+    messagingSenderId: v('cfg-messagingSenderId') || EMBEDDED_FIREBASE.messagingSenderId,
+    appId:             v('cfg-appId')             || EMBEDDED_FIREBASE.appId,
+  };
+  const cldName   = document.getElementById('cld-cloudName')?.value.trim()    || EMBEDDED_CLOUDINARY.cloudName    || 'YOUR_CLOUD_NAME';
+  const cldPreset = document.getElementById('cld-uploadPreset')?.value.trim() || EMBEDDED_CLOUDINARY.uploadPreset || 'YOUR_UPLOAD_PRESET';
+
+  const snippet = `const EMBEDDED_FIREBASE = {
+  apiKey:            "${cfg.apiKey}",
+  authDomain:        "${cfg.authDomain}",
+  projectId:         "${cfg.projectId}",
+  storageBucket:     "${cfg.storageBucket}",
+  messagingSenderId: "${cfg.messagingSenderId}",
+  appId:             "${cfg.appId}"
+};
+
+const EMBEDDED_CLOUDINARY = {
+  cloudName:    "${cldName}",
+  uploadPreset: "${cldPreset}"
+};`;
+
+  navigator.clipboard.writeText(snippet).then(() => {
+    showToast('Snippet copied! Open admin.html in a text editor, find EMBEDDED_FIREBASE and replace the whole block with this.', 'success');
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = snippet;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    el.remove();
+    showToast('Snippet copied!', 'success');
+  });
+}
+
+function copyFirestoreRules() {
+  const rules = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}`;
+  navigator.clipboard.writeText(rules).then(()=>showToast('Firestore rules copied!','success')).catch(()=>{
+    const el=document.createElement('textarea'); el.value=rules; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove();
+    showToast('Rules copied!','success');
+  });
+}
+
+// close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+
+// ════════════════════════════════════════
+// CARD BUILDER
+// ════════════════════════════════════════
+let cbType = null;
+let cbSize = 'wide2';
+let cbEditId = null;
+let cbRepeaterItems = {}; // {fieldKey: [{...}]}
+
+const CB_TYPE_META = {
+  'image-slider':       { label:'Image Slider',  icon:'fas fa-images',      badge:'badge-slider'  },
+  'text-icon':          { label:'Text Card',      icon:'fas fa-align-left',  badge:'badge-text'    },
+  'quote-banner':       { label:'Quote / Banner', icon:'fas fa-quote-left',  badge:'badge-quote'   },
+  'skills-cloud':       { label:'Skills Cloud',   icon:'fas fa-tags',        badge:'badge-skills'  },
+  'icon-slider':        { label:'Icon Slider',    icon:'fas fa-cogs',        badge:'badge-icon'    },
+  'project-testimonial':{ label:'Projects',       icon:'fas fa-folder-open', badge:'badge-project' },
+};
+
+// ── Subscribe to page-cards ──
+function subscribePageCards() {
+  if (!db) return;
+  const { collection, onSnapshot } = window._fb;
+  onSnapshot(collection(db,'page-cards'), snap => {
+    const cards = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.order||0)-(b.order||0));
+    renderCbList(cards);
+    const cnt = document.getElementById('cnt-page-cards');
+    if (cnt) cnt.textContent = cards.length;
+  });
+}
+
+function renderCbList(cards) {
+  const list = document.getElementById('cbList');
+  if (!list) return;
+  if (!cards.length) {
+    list.innerHTML = `<div class="empty-state" style="grid-column:unset"><i class="fas fa-layer-group"></i><p>No custom cards yet. Click "+ Add New Card" to create one.</p></div>`;
+    return;
+  }
+  list.innerHTML = cards.map((card,i) => {
+    const meta = CB_TYPE_META[card.type] || {label:card.type, icon:'fas fa-square', badge:'badge-text'};
+    const cfg  = card.config || {};
+    const preview = cfg.title || cfg.heading || card.type;
+    return `<div class="cb-card" draggable="true" data-id="${card.id}" data-order="${card.order||i}"
+      ondragstart="cbDragStart(event,this)" ondragover="cbDragOver(event,this)" ondragleave="cbDragLeave(this)" ondrop="cbDrop(event,this)">
+      <span class="cb-drag-handle"><i class="fas fa-grip-vertical"></i></span>
+      <div class="cb-card-icon"><i class="${meta.icon}" style="color:var(--muted)"></i></div>
+      <div class="cb-card-info">
+        <div class="cb-card-title">${preview}</div>
+        <div class="cb-card-meta">${meta.label} · size: ${card.size||'wide2'} · order: ${card.order||i}</div>
+      </div>
+      <span class="cb-card-badge ${meta.badge}">${meta.label}</span>
+      <div class="cb-actions">
+        <button class="btn-sm btn-edit" onclick="editCbCard('${card.id}')"><i class="fas fa-edit"></i></button>
+        <button class="btn-sm btn-delete" onclick="deleteCbCard('${card.id}')"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Open Card Builder Modal ──
+function openCardBuilder(editId=null) {
+  cbEditId = editId; cbType = null; cbSize = 'wide2'; cbRepeaterItems = {};
+  document.getElementById('cbStep1').style.display = 'block';
+  document.getElementById('cbStep2').style.display = 'none';
+  document.getElementById('cbModalActions').style.display = 'none';
+  document.getElementById('cbModalTitle').textContent = editId ? 'Edit Card' : 'Add New Card';
+  document.querySelectorAll('.type-option').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('.size-opt').forEach(o=>o.classList.remove('selected'));
+  document.querySelector('.size-opt')?.classList.add('selected');
+  document.getElementById('cb-bgColor').value = '#ffffff';
+  document.getElementById('cb-bgColor-picker').value = '#ffffff';
+
+  if (editId) {
+    // find card in all subscribed data and pre-fill
+    const { doc, getDoc } = window._fb;
+    getDoc(doc(db,'page-cards',editId)).then(snap => {
+      if (!snap.exists()) return;
+      const card = snap.data();
+      cbType = card.type; cbSize = card.size || 'wide2';
+      // select type
+      document.querySelectorAll('.type-option').forEach(o => {
+        if (o.getAttribute('onclick')?.includes("'"+cbType+"'")) o.classList.add('selected');
+      });
+      // select size
+      document.querySelectorAll('.size-opt').forEach(o => {
+        if (o.getAttribute('onclick')?.includes("'"+cbSize+"'")) o.classList.add('selected');
+      });
+      // bg color
+      const bg = card.config?.bgColor || '#ffffff';
+      document.getElementById('cb-bgColor').value = bg;
+      document.getElementById('cb-bgColor-picker').value = /^#[0-9a-fA-F]{6}$/.test(bg) ? bg : '#ffffff';
+      // show step 2 with config
+      document.getElementById('cbStep1').style.display = 'none';
+      document.getElementById('cbStep2').style.display = 'block';
+      document.getElementById('cbModalActions').style.display = 'flex';
+      document.getElementById('cbSaveBtnText').textContent = 'Update Card';
+      renderCbConfigFields(cbType, card.config || {});
+    });
+  }
+
+  document.getElementById('cbModalOverlay').classList.add('open');
+}
+
+function closeCbModal() {
+  document.getElementById('cbModalOverlay').classList.remove('open');
+  const modal = document.getElementById('cbModalInner');
+  if (modal) modal.removeAttribute('data-cb-type');
+  cbEditId = null; cbType = null; cbRepeaterItems = {};
+}
+
+function selectCardType(type, el) {
+  cbType = type;
+  // Also store on the modal element itself as a data attribute — bulletproof backup
+  const modal = document.getElementById('cbModalInner');
+  if (modal) modal.setAttribute('data-cb-type', type);
+
+  document.querySelectorAll('.type-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('cbStep1').style.display = 'none';
+  document.getElementById('cbStep2').style.display = 'block';
+  document.getElementById('cbModalActions').style.display = 'flex';
+  document.getElementById('cbSaveBtnText').textContent = cbEditId ? 'Update Card' : 'Add Card';
+
+  // update the selected type badge
+  const meta = CB_TYPE_META[type] || {};
+  const iconEl = document.getElementById('cbSelectedTypeIcon');
+  const labelEl = document.getElementById('cbSelectedTypeLabel');
+  if (iconEl) { iconEl.className = (meta.icon||'fas fa-square')+' '; iconEl.style.color='var(--accent2)'; }
+  if (labelEl) labelEl.textContent = meta.label || type;
+
+  renderCbConfigFields(type, {});
+}
+
+function cbBack() {
+  cbType = null;
+  const modal = document.getElementById('cbModalInner');
+  if (modal) modal.removeAttribute('data-cb-type');
+  document.getElementById('cbStep1').style.display = 'block';
+  document.getElementById('cbStep2').style.display = 'none';
+  document.getElementById('cbModalActions').style.display = 'none';
+}
+
+function selectSize(size, el) {
+  cbSize = size;
+  document.querySelectorAll('.size-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── Render config fields per card type ──
+function renderCbConfigFields(type, existing) {
+  const container = document.getElementById('cbConfigFields');
+  if (!container) return;
+
+  if (type === 'text-icon') {
+    container.innerHTML = `
+      <div class="field"><label>Title</label><input type="text" id="cb-title" value="${existing.title||''}"/></div>
+      <div class="field"><label>Body Text</label><textarea id="cb-body">${existing.body||''}</textarea></div>
+      <div class="field"><label>Title Color</label>
+        <div class="color-row"><input type="color" id="cb-titleColor-picker" value="${existing.titleColor||'#333333'}" oninput="syncColor('cb-titleColor')">
+        <input type="text" id="cb-titleColor" value="${existing.titleColor||'#333333'}" oninput="syncPicker('cb-titleColor')"></div>
+      </div>
+      <div class="field"><label>Body Text Color</label>
+        <div class="color-row"><input type="color" id="cb-textColor-picker" value="${existing.textColor||'#555555'}" oninput="syncColor('cb-textColor')">
+        <input type="text" id="cb-textColor" value="${existing.textColor||'#555555'}" oninput="syncPicker('cb-textColor')"></div>
+      </div>`;
+  }
+  else if (type === 'quote-banner') {
+    container.innerHTML = `
+      <div class="field"><label>Heading Text</label><input type="text" id="cb-title" value="${existing.title||''}"/></div>
+      <div class="field"><label>Link URL (optional)</label><input type="text" id="cb-link" value="${existing.link||''}"/></div>
+      <div class="field"><label>Background Image URL (optional)</label><input type="text" id="cb-bgImage" value="${existing.bgImage||''}"/></div>
+      <div class="field"><label>Text Color</label>
+        <div class="color-row"><input type="color" id="cb-titleColor-picker" value="${existing.titleColor||'#ffffff'}" oninput="syncColor('cb-titleColor')">
+        <input type="text" id="cb-titleColor" value="${existing.titleColor||'#ffffff'}" oninput="syncPicker('cb-titleColor')"></div>
+      </div>`;
+  }
+  else if (type === 'skills-cloud') {
+    cbRepeaterItems['skills'] = (existing.skills||[]).map(s=>({name:s.name||'',iconUrl:s.iconUrl||''}));
+    container.innerHTML = `
+      <div class="field"><label>Section Title (optional)</label><input type="text" id="cb-title" value="${existing.title||''}"/></div>
+      <div class="field"><label>Skills</label>
+        <div class="repeater" id="rep-skills">${renderRepeaterItems('skills')}</div>
+        <button class="repeater-add" onclick="addRepeaterItem('skills')"><i class="fas fa-plus"></i> Add Skill</button>
+      </div>`;
+  }
+  else if (type === 'image-slider') {
+    cbRepeaterItems['slides'] = (existing.slides||[]).map(s=>({title:s.title||'',description:s.description||'',imgUrl:s.imgUrl||'',bgColor:s.bgColor||'',textColor:s.textColor||'dark'}));
+    container.innerHTML = `
+      <div class="field"><label>Slides</label>
+        <div class="repeater" id="rep-slides">${renderRepeaterItems('slides')}</div>
+        <button class="repeater-add" onclick="addRepeaterItem('slides')"><i class="fas fa-plus"></i> Add Slide</button>
+      </div>`;
+  }
+  else if (type === 'icon-slider') {
+    cbRepeaterItems['icons'] = (existing.icons||[]).map(ic=>({name:ic.name||'',iconUrl:ic.iconUrl||''}));
+    container.innerHTML = `
+      <div class="field"><label>Icons / Tools</label>
+        <div class="repeater" id="rep-icons">${renderRepeaterItems('icons')}</div>
+        <button class="repeater-add" onclick="addRepeaterItem('icons')"><i class="fas fa-plus"></i> Add Icon</button>
+      </div>`;
+  }
+  else if (type === 'project-testimonial') {
+    cbRepeaterItems['items'] = (existing.items||[]).map(it=>({name:it.name||'',description:it.description||''}));
+    container.innerHTML = `
+      <div class="field"><label>Section Title</label><input type="text" id="cb-title" value="${existing.title||'Projects'}"/></div>
+      <div class="field"><label>Projects</label>
+        <div class="repeater" id="rep-items">${renderRepeaterItems('items')}</div>
+        <button class="repeater-add" onclick="addRepeaterItem('items')"><i class="fas fa-plus"></i> Add Project</button>
+      </div>`;
+  }
+}
+
+function renderRepeaterItems(key) {
+  const items = cbRepeaterItems[key] || [];
+  if (!items.length) return '';
+  return items.map((item, i) => {
+    let fields = '';
+
+    if (key==='skills' || key==='icons') {
+      // ── FIX 4 source: icon items get image upload ──
+      const previewHtml = item.iconUrl
+        ? `<img src="${item.iconUrl}" style="height:40px;width:40px;object-fit:contain;border-radius:4px;border:1px solid var(--border)"/>`
+        : `<div style="width:40px;height:40px;background:var(--surface);border:1px dashed var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">icon</div>`;
+      fields = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${previewHtml}
+          <input type="text" placeholder="Name (e.g. Docker)" value="${item.name||''}"
+            oninput="updateRepItem('${key}',${i},'name',this.value)"
+            style="flex:1"/>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" placeholder="Icon URL" value="${item.iconUrl||''}" id="rep-${key}-${i}-url"
+            oninput="updateRepItem('${key}',${i},'iconUrl',this.value);repUpdateIconPreview('${key}',${i})"
+            style="flex:1;font-size:11px"/>
+          <button onclick="repPickImage('${key}',${i},'rep-${key}-${i}-url')"
+            style="background:var(--blue);border:none;border-radius:5px;padding:5px 9px;color:#fff;cursor:pointer;font-size:11px;white-space:nowrap;flex-shrink:0">
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </div>`;
+
+    } else if (key==='slides') {
+      // ── FIX 1: add text align; FIX 2: add image upload ──
+      const previewHtml = item.imgUrl
+        ? `<img src="${item.imgUrl}" style="height:50px;width:80px;object-fit:cover;border-radius:5px;border:1px solid var(--border)"/>`
+        : `<div style="width:80px;height:50px;background:var(--surface);border:1px dashed var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted)">no img</div>`;
+      const alignLeft   = (item.textAlign||'left')==='left'   ? 'selected':'';
+      const alignCenter = (item.textAlign||'left')==='center' ? 'selected':'';
+      const alignRight  = (item.textAlign||'left')==='right'  ? 'selected':'';
+      fields = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <input type="text" placeholder="Slide title" value="${item.title||''}"
+            oninput="updateRepItem('${key}',${i},'title',this.value)"/>
+          <select onchange="updateRepItem('${key}',${i},'textColor',this.value)"
+            style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-family:inherit;font-size:11px">
+            <option value="dark" ${(item.textColor||'dark')==='dark'?'selected':''}>Dark text</option>
+            <option value="light" ${item.textColor==='light'?'selected':''}>Light text</option>
+          </select>
+        </div>
+        <textarea placeholder="Description" oninput="updateRepItem('${key}',${i},'description',this.value)"
+          style="min-height:56px">${item.description||''}</textarea>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;flex-shrink:0">Align</span>
+          <button type="button"
+            style="flex:1;padding:5px;border-radius:5px;border:2px solid ${'left'===(item.textAlign||'left')?'var(--accent2)':'var(--border)'};background:${'left'===(item.textAlign||'left')?'var(--accent2)':'var(--surface2)'};color:${'left'===(item.textAlign||'left')?'#fff':'var(--muted)'};cursor:pointer;font-size:11px;title='Left'"
+            onclick="setRepAlign('${key}',${i},'left')"><i class="fas fa-align-left"></i></button>
+          <button type="button"
+            style="flex:1;padding:5px;border-radius:5px;border:2px solid ${'center'===(item.textAlign||'left')?'var(--accent2)':'var(--border)'};background:${'center'===(item.textAlign||'left')?'var(--accent2)':'var(--surface2)'};color:${'center'===(item.textAlign||'left')?'#fff':'var(--muted)'};cursor:pointer;font-size:11px"
+            onclick="setRepAlign('${key}',${i},'center')"><i class="fas fa-align-center"></i></button>
+          <button type="button"
+            style="flex:1;padding:5px;border-radius:5px;border:2px solid ${'right'===(item.textAlign||'left')?'var(--accent2)':'var(--border)'};background:${'right'===(item.textAlign||'left')?'var(--accent2)':'var(--surface2)'};color:${'right'===(item.textAlign||'left')?'#fff':'var(--muted)'};cursor:pointer;font-size:11px"
+            onclick="setRepAlign('${key}',${i},'right')"><i class="fas fa-align-right"></i></button>
+          <button type="button"
+            style="flex:1;padding:5px;border-radius:5px;border:2px solid ${'justify'===(item.textAlign||'left')?'var(--accent2)':'var(--border)'};background:${'justify'===(item.textAlign||'left')?'var(--accent2)':'var(--surface2)'};color:${'justify'===(item.textAlign||'left')?'#fff':'var(--muted)'};cursor:pointer;font-size:11px"
+            onclick="setRepAlign('${key}',${i},'justify')"><i class="fas fa-align-justify"></i></button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${previewHtml}
+          <div style="flex:1">
+            <input type="text" placeholder="Image URL" value="${item.imgUrl||''}" id="rep-${key}-${i}-img"
+              oninput="updateRepItem('${key}',${i},'imgUrl',this.value)"
+              style="width:100%;margin-bottom:4px;font-size:11px"/>
+            <div style="display:flex;gap:4px">
+              <button onclick="repPickImage('${key}',${i},'rep-${key}-${i}-img')"
+                style="flex:1;background:var(--blue);border:none;border-radius:5px;padding:5px;color:#fff;cursor:pointer;font-size:11px">
+                <i class="fas fa-upload"></i> Upload image
+              </button>
+              <input type="text" placeholder="BG color" value="${item.bgColor||''}"
+                oninput="updateRepItem('${key}',${i},'bgColor',this.value)"
+                style="flex:1;font-size:11px"/>
+            </div>
+          </div>
+        </div>`;
+
+    } else if (key==='items') {
+      fields = `
+        <input type="text" placeholder="Project / Company name" value="${item.name||''}"
+          oninput="updateRepItem('${key}',${i},'name',this.value)"/>
+        <textarea placeholder="Description" oninput="updateRepItem('${key}',${i},'description',this.value)"
+          style="min-height:56px">${item.description||''}</textarea>`;
+    }
+
+    return `<div class="repeater-item">
+      <div class="repeater-item-body">${fields}</div>
+      <button class="btn-remove-item" onclick="removeRepItem('${key}',${i})"><i class="fas fa-times"></i></button>
+    </div>`;
+  }).join('');
+}
+
+// helper so align buttons can re-render the repeater
+window._repRender = (key) => renderRepeaterItems(key);
+
+function setRepAlign(key, idx, align) {
+  updateRepItem(key, idx, 'textAlign', align);
+  const rep = document.getElementById('rep-'+key);
+  if (rep) rep.innerHTML = renderRepeaterItems(key);
+}
+
+// Image picker for repeater items — reuses the main Cloudinary upload
+function repPickImage(key, idx, inputId) {
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*';
+  picker.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      showToast('Uploading image…', 'success');
+      const url = await uploadToCloudinary(file, key);
+      updateRepItem(key, idx, key==='slides'?'imgUrl':'iconUrl', url);
+      const inp = document.getElementById(inputId);
+      if (inp) inp.value = url;
+      // re-render to show preview
+      const rep = document.getElementById('rep-'+key);
+      if (rep) rep.innerHTML = renderRepeaterItems(key);
+      showToast('Image uploaded!', 'success');
+    } catch(err) {
+      showToast('Upload failed: '+err.message, 'error');
+    }
+  };
+  picker.click();
+}
+
+// expose
+window.setRepAlign = setRepAlign;
+window.repPickImage = repPickImage;
+window.repUpdateIconPreview = function(key, idx) {
+  const rep = document.getElementById('rep-'+key);
+  if (rep) rep.innerHTML = renderRepeaterItems(key);
+};
+
+function addRepeaterItem(key) {
+  if (!cbRepeaterItems[key]) cbRepeaterItems[key] = [];
+  const defaults = {
+    skills: {name:'',iconUrl:''}, icons: {name:'',iconUrl:''},
+    slides: {title:'',description:'',imgUrl:'',bgColor:'',textColor:'dark',textAlign:'left'},
+    items:  {name:'',description:''}
+  };
+  cbRepeaterItems[key].push({...(defaults[key]||{})});
+  const rep = document.getElementById('rep-'+key);
+  if (rep) rep.innerHTML = renderRepeaterItems(key);
+}
+
+function removeRepItem(key, idx) {
+  cbRepeaterItems[key]?.splice(idx, 1);
+  const rep = document.getElementById('rep-'+key);
+  if (rep) rep.innerHTML = renderRepeaterItems(key);
+}
+
+function updateRepItem(key, idx, field, val) {
+  if (cbRepeaterItems[key]?.[idx]) cbRepeaterItems[key][idx][field] = val;
+}
+
+// ── Save Card ──
+async function saveCbCard() {
+  // Read type from variable OR from DOM data attribute (failsafe)
+  const modal = document.getElementById('cbModalInner');
+  const resolvedType = cbType || (modal && modal.getAttribute('data-cb-type'));
+  if (!db || !resolvedType) { showToast('Select a card type first','error'); return; }
+  cbType = resolvedType; // ensure variable is in sync
+
+  const { collection, addDoc, updateDoc, doc, getDocs } = window._fb;
+  const btn = document.getElementById('cbSaveBtnText');
+  const orig = btn ? btn.textContent : 'Save';
+  if (btn) btn.textContent = 'Saving…';
+  const saveBtn = document.getElementById('cbSaveBtn');
+  if (saveBtn) saveBtn.disabled = true;
+
+  // build config from fields
+  const cbg = v('cb-bgColor') || '#ffffff';
+  let config = { bgColor: cbg };
+
+  if (cbType==='text-icon') {
+    config = {...config, title:v('cb-title'), body:v('cb-body'), titleColor:v('cb-titleColor'), textColor:v('cb-textColor')};
+  } else if (cbType==='quote-banner') {
+    config = {...config, title:v('cb-title'), link:v('cb-link'), bgImage:v('cb-bgImage'), titleColor:v('cb-titleColor')};
+  } else if (cbType==='skills-cloud') {
+    config = {...config, title:v('cb-title'), skills: cbRepeaterItems['skills']||[]};
+  } else if (cbType==='image-slider') {
+    config = {...config, slides: cbRepeaterItems['slides']||[]};
+  } else if (cbType==='icon-slider') {
+    config = {...config, icons: cbRepeaterItems['icons']||[]};
+  } else if (cbType==='project-testimonial') {
+    config = {...config, title:v('cb-title'), items: cbRepeaterItems['items']||[]};
+  }
+
+  try {
+    if (cbEditId) {
+      await updateDoc(doc(db,'page-cards',cbEditId), { type:cbType, size:cbSize, config });
+      showToast('Card updated!','success');
+    } else {
+      // get current max order
+      const snap = await getDocs(collection(db,'page-cards'));
+      const maxOrder = snap.docs.reduce((m,d)=>Math.max(m,d.data().order||0),0);
+      await addDoc(collection(db,'page-cards'), { type:cbType, size:cbSize, config, order:maxOrder+1 });
+      showToast('Card added to portfolio!','success');
+    }
+    closeCbModal();
+  } catch(e) {
+    showToast('Error: '+e.message,'error');
+  } finally {
+    if (btn) btn.textContent = orig;
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+async function deleteCbCard(id) {
+  if (!confirm('Remove this card from your portfolio?')) return;
+  const { deleteDoc, doc } = window._fb;
+  try { await deleteDoc(doc(db,'page-cards',id)); showToast('Card removed.','success'); }
+  catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+function editCbCard(id) { openCardBuilder(id); }
+
+// ── Drag & Drop Reorder ──
+let cbDragSrcId = null;
+
+function cbDragStart(e, el) {
+  cbDragSrcId = el.dataset.id;
+  el.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function cbDragOver(e, el) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.cb-card').forEach(c=>c.classList.remove('drag-over'));
+  if (el.dataset.id !== cbDragSrcId) el.classList.add('drag-over');
+}
+function cbDragLeave(el) { el.classList.remove('drag-over'); }
+
+async function cbDrop(e, el) {
+  e.preventDefault();
+  document.querySelectorAll('.cb-card').forEach(c=>{ c.classList.remove('drag-over','dragging'); });
+  const targetId = el.dataset.id;
+  if (!targetId || targetId === cbDragSrcId) return;
+
+  // get current ordered list from DOM
+  const domCards = [...document.querySelectorAll('.cb-card')];
+  const srcIdx = domCards.findIndex(c=>c.dataset.id===cbDragSrcId);
+  const tgtIdx = domCards.findIndex(c=>c.dataset.id===targetId);
+  if (srcIdx<0||tgtIdx<0) return;
+
+  // reorder
+  const ordered = domCards.map(c=>c.dataset.id);
+  const [moved] = ordered.splice(srcIdx, 1);
+  ordered.splice(tgtIdx, 0, moved);
+
+  // write new order to Firebase
+  const { doc, updateDoc } = window._fb;
+  try {
+    await Promise.all(ordered.map((id, i) => updateDoc(doc(db,'page-cards',id), {order:i})));
+    showToast('Order saved!','success');
+  } catch(e) { showToast('Reorder failed: '+e.message,'error'); }
+}
+
+// close cb modal on overlay click
+document.getElementById('cbModalOverlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeCbModal(); });
+
+// ════════════════════════════════════════
+// SITE TEXT — save / load
+// ════════════════════════════════════════
+const SITE_TEXT_FIELDS = {
+  hero:   ['st-heroTitle','st-heroSubtitle','st-heroBg'],
+  quote:  ['st-quoteTitle','st-quoteLink','st-quoteBg'],
+  hello:  ['st-helloTitle','st-helloText'],
+  about:  ['st-aboutTitle','st-aboutP1','st-aboutP2','st-aboutBg'],
+  social: ['st-email','st-phone','st-github','st-linkedin']
+};
+
+async function saveSiteText(section) {
+  if (!db) { showToast('Connect Firebase first','error'); return; }
+  const { doc, setDoc } = window._fb;
+  const payload = {};
+  (SITE_TEXT_FIELDS[section]||[]).forEach(id => {
+    const key = id.replace('st-','');
+    payload[key] = v(id);
+  });
+  try {
+    await setDoc(doc(db,'site-settings','text-'+section), payload, {merge:true});
+    showToast(section+' text saved!','success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+function loadSiteTextSection(section, data) {
+  (SITE_TEXT_FIELDS[section]||[]).forEach(id => {
+    const key = id.replace('st-','');
+    const el = document.getElementById(id);
+    if (el && data[key] !== undefined) {
+      el.value = data[key];
+      // sync color picker
+      const picker = document.getElementById(id+'-picker');
+      if (picker && /^#[0-9a-fA-F]{6}$/.test(data[key])) picker.value = data[key];
+    }
+  });
+}
+
+function subscribeSiteText() {
+  if (!db) return;
+  const { doc, onSnapshot } = window._fb;
+  Object.keys(SITE_TEXT_FIELDS).forEach(section => {
+    onSnapshot(doc(db,'site-settings','text-'+section), snap => {
+      if (snap.exists()) loadSiteTextSection(section, snap.data());
+    });
+  });
+}
+
+// ════════════════════════════════════════
+// PROFILE IMAGE
+// ════════════════════════════════════════
+function handleProfileDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('profileUploadZone');
+  if (zone) zone.style.borderColor='var(--border)';
+  const f = e.dataTransfer.files[0];
+  if (f?.type.startsWith('image/')) handleProfileFile(f);
+  else showToast('Please drop an image file','error');
+}
+function handleProfileSelect(input) { if (input.files?.[0]) handleProfileFile(input.files[0]); }
+
+async function handleProfileFile(file) {
+  if (!db) { showToast('Connect Firebase first','error'); return; }
+  if (file.size > 10*1024*1024) { showToast('Max 10MB','error'); return; }
+  CLOUD_NAME = localStorage.getItem('cld-cloud-name')||CLOUD_NAME;
+  UPLOAD_PRESET = localStorage.getItem('cld-upload-preset')||UPLOAD_PRESET;
+  if (!CLOUD_NAME||!UPLOAD_PRESET) { showToast('Configure Cloudinary first','error'); return; }
+
+  // local preview
+  const reader = new FileReader();
+  reader.onload = e2 => {
+    const inner = document.getElementById('profileUploadInner');
+    if (inner) inner.innerHTML = `<img src="${e2.target.result}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px;border:2px solid var(--accent2)"/>
+      <div style="font-size:12px;color:var(--green)"><i class="fas fa-check-circle"></i> ${file.name} — uploading…</div>`;
+  };
+  reader.readAsDataURL(file);
+
+  const prog = document.getElementById('profileProgress');
+  const bar  = document.getElementById('profileProgBar');
+  const pct  = document.getElementById('profileProgPct');
+  const fname= document.getElementById('profileProgName');
+  if (prog) prog.style.display='block';
+  if (fname) fname.textContent = file.name;
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    fd.append('folder', 'portfolio/profile');
+
+    const url = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const p = Math.round(e.loaded/e.total*100);
+          if (bar) bar.style.width=p+'%';
+          if (pct) pct.textContent=p+'%';
+        }
+      };
+      xhr.onload = () => {
+        if (prog) prog.style.display='none';
+        xhr.status===200 ? resolve(JSON.parse(xhr.responseText).secure_url)
+          : reject(new Error(JSON.parse(xhr.responseText).error?.message||'Upload failed'));
+      };
+      xhr.onerror = () => { if(prog) prog.style.display='none'; reject(new Error('Network error')); };
+      xhr.send(fd);
+    });
+
+    await saveProfileImageUrl(url);
+    showToast('Profile photo updated!','success');
+  } catch(e) {
+    if (prog) prog.style.display='none';
+    showToast('Upload failed: '+e.message,'error');
+  }
+}
+
+async function saveProfileUrl() {
+  if (!db) { showToast('Connect Firebase first','error'); return; }
+  const url = document.getElementById('profileUrlInput').value.trim();
+  if (!url) { showToast('Enter a URL','error'); return; }
+  await saveProfileImageUrl(url);
+  showToast('Profile image URL saved!','success');
+  document.getElementById('profileUrlInput').value='';
+}
+
+async function saveProfileImageUrl(url) {
+  const { doc, setDoc } = window._fb;
+  await setDoc(doc(db,'site-settings','profile'), { photoUrl: url, updatedAt: Date.now() });
+}
+
+async function deleteProfileImage() {
+  if (!confirm('Remove profile photo?')) return;
+  const { doc, deleteDoc } = window._fb;
+  try {
+    await deleteDoc(doc(db,'site-settings','profile'));
+    showToast('Profile photo removed.','success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+function subscribeProfile() {
+  if (!db) return;
+  const { doc, onSnapshot } = window._fb;
+  onSnapshot(doc(db,'site-settings','profile'), snap => {
+    const card    = document.getElementById('profileImgCurrentCard');
+    const preview = document.getElementById('profileImgPreview');
+    const urlEl   = document.getElementById('profileImgUrl');
+    const dashEl  = document.getElementById('dash-photo');
+    if (snap.exists() && snap.data().photoUrl) {
+      if (card)    card.style.display='flex';
+      if (preview) preview.src = snap.data().photoUrl;
+      if (urlEl)   urlEl.textContent = snap.data().photoUrl;
+      if (dashEl)  { dashEl.textContent='Set ✓'; dashEl.style.color='var(--green)'; }
+    } else {
+      if (card) card.style.display='none';
+      if (dashEl) { dashEl.textContent='Not set'; dashEl.style.color='var(--red)'; }
+    }
+  });
+}
+
+// expose
+window.doLogin=doLogin; window.doLogout=doLogout; window.showTab=showTab;
+window.toggleSidebar=toggleSidebar; window.closeSidebar=closeSidebar;
+window.openModal=openModal; window.closeModal=closeModal; window.saveItem=saveItem; window.deleteItem=deleteItem;
+window.saveFirebaseConfig=saveFirebaseConfig; window.saveCloudinaryConfig=saveCloudinaryConfig;
+window.toggleLock=toggleLock; window.copyEmbedSnippet=copyEmbedSnippet; window.copyFirestoreRules=copyFirestoreRules;
+window.handleFileSelect=handleFileSelect; window.handleDrop=handleDrop; window.updatePreviewFromUrl=updatePreviewFromUrl;
+window.handleResumeDrop=handleResumeDrop; window.handleResumeSelect=handleResumeSelect;
+window.saveResumeUrl=saveResumeUrl; window.deleteResume=deleteResume;
+window.setSwatch=setSwatch; window.syncColor=syncColor; window.syncPicker=syncPicker;
+window.saveSiteText=saveSiteText;
+window.handleProfileDrop=handleProfileDrop; window.handleProfileSelect=handleProfileSelect;
+window.saveProfileUrl=saveProfileUrl; window.deleteProfileImage=deleteProfileImage;
+// card builder
+window.openCardBuilder=openCardBuilder; window.closeCbModal=closeCbModal;
+window.selectCardType=selectCardType; window.cbBack=cbBack; window.selectSize=selectSize;
+window.saveCbCard=saveCbCard; window.deleteCbCard=deleteCbCard; window.editCbCard=editCbCard;
+window.addRepeaterItem=addRepeaterItem; window.removeRepItem=removeRepItem; window.updateRepItem=updateRepItem;
+window.cbDragStart=cbDragStart; window.cbDragOver=cbDragOver; window.cbDragLeave=cbDragLeave; window.cbDrop=cbDrop;
+window.setRepAlign=setRepAlign; window.repPickImage=repPickImage; window.repUpdateIconPreview=repUpdateIconPreview;
+
+// ── Boot: initialise Firebase Auth as soon as SDK is ready ──
+// Use a small delay so the module script has time to set window._fb
+setTimeout(() => {
+  if (window._fb && window._fb.initializeApp) {
+    bootAuth();
+  } else {
+    // SDK not ready yet — wait for it
+    const wait = setInterval(() => {
+      if (window._fb && window._fb.initializeApp) {
+        clearInterval(wait);
+        bootAuth();
+      }
+    }, 100);
+  }
+}, 50);
+</script>
+</body>
+</html>
