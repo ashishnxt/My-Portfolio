@@ -1,0 +1,67 @@
+# ── Netlify Configuration ──
+# Upload this file to the ROOT of your Netlify project alongside index.html
+
+# ── Build settings (if using a build tool) ──
+# [build]
+#   publish = "dist"
+#   command = "npm run build"
+
+# ── Cache headers for static assets ──
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/video/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── Security headers for all pages ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking
+    X-Frame-Options = "SAMEORIGIN"
+    # Stop MIME sniffing
+    X-Content-Type-Options = "nosniff"
+    # Enable XSS protection
+    X-XSS-Protection = "1; mode=block"
+    # Referrer policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Permissions policy
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# ── Redirect old admin.html to new name (in case bookmarked) ──
+# Remove this block AFTER you've updated your bookmark
+[[redirects]]
+  from = "/admin.html"
+  to   = "/ashish-cms-7x3k.html"
+  status = 301
+  force  = true
+
+# ── Block common attack paths ──
+[[redirects]]
+  from = "/wp-admin/*"
+  to   = "/"
+  status = 301
+
+[[redirects]]
+  from = "/.env"
+  to   = "/"
+  status = 301
+
+[[redirects]]
+  from = "/.git/*"
+  to   = "/"
+  status = 301
