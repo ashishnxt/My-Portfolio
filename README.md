@@ -7,7 +7,7 @@
 ### Production-grade personal portfolio with a full CMS admin panel
 ### Built 100% free — zero server, zero cost, zero compromise
 
-[![Live Site](https://img.shields.io/badge/🌐_Live_Site-ashishnxt.netlify.app-7C0A02?style=for-the-badge)](https://ashishnxt.netlify.app)
+[![Live Site](https://img.shields.io/badge/🌐_Live_Site-ashishnxt.netlify.app-7C0A02?style=for-the-badge)](https://myself-ashish-sharma.netlify.app/)
 [![Netlify](https://img.shields.io/badge/Hosted_on-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://netlify.com)
 [![Firebase](https://img.shields.io/badge/Database-Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
 [![Cloudinary](https://img.shields.io/badge/Images-Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com)
@@ -61,7 +61,7 @@ This is not a static portfolio. Every piece of text, every image, every slide an
 
 | Resource | URL |
 |---|---|
-| 🌍 Portfolio | [ashishnxt.netlify.app](https://ashishnxt.netlify.app) |
+| 🌍 Portfolio | [ashishnxt.netlify.app](https://myself-ashish-sharma.netlify.app/) |
 | 🔐 Admin Panel | Hidden URL — see [Admin Panel](#-admin-panel) section |
 | 📄 GitHub | [github.com/ashishnxt](https://github.com/ashishnxt) |
 | 💼 LinkedIn | [linkedin.com/in/ashish-sharma-6551591bb](https://linkedin.com/in/ashish-sharma-6551591bb) |
@@ -373,7 +373,7 @@ Want to build your own version? Here's how:
 
 ### Step 1 — Fork & Clone
 ```bash
-git clone https://github.com/ashishnxt/portfolio.git
+git clone https://github.com/ashishnxt/My-Portfolio.git
 cd portfolio
 ```
 
@@ -509,19 +509,6 @@ firestore/
 
 ---
 
-## 🔮 Future Improvements
-
-- [ ] Contact form (Formspree integration)
-- [ ] Dark / Light mode toggle
-- [ ] Drag reorder for AI/DevOps/UI slides in admin
-- [ ] Soft delete — 7-day recovery for deleted items
-- [ ] Idle session timeout in admin panel (30 min auto-logout)
-- [ ] Service worker — offline viewing support
-- [ ] JSON-LD structured data for Google rich results
-- [ ] Bulk operations in admin panel
-
----
-
 ## 📄 License
 
 This project is open source. Feel free to fork and build your own version.
@@ -533,7 +520,7 @@ If you use this as a base, a credit or star would be appreciated! ⭐
 
 **Built with precision. Deployed with confidence.**
 
-[🌐 ashishnxt.netlify.app](https://ashishnxt.netlify.app) &nbsp;•&nbsp;
+[🌐 ashishnxt.netlify.app](https://myself-ashish-sharma.netlify.app/) &nbsp;•&nbsp;
 [💼 LinkedIn](https://linkedin.com/in/ashish-sharma-6551591bb) &nbsp;•&nbsp;
 [🐙 GitHub](https://github.com/ashishnxt) &nbsp;•&nbsp;
 [📧 ashishaxm@gmail.com](mailto:ashishaxm@gmail.com)
