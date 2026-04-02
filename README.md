@@ -17,6 +17,9 @@
 
 ---
 
+<img width="1369" height="1007" alt="Screenshot from 2026-04-01 19-56-12" src="https://github.com/user-attachments/assets/5cba2894-1d02-4e29-b931-9f3dc3951786" />
+
+
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
@@ -184,6 +187,8 @@ portfolio/
 
 ---
 
+<img width="1377" height="1014" alt="Screenshot from 2026-04-01 19-30-59" src="https://github.com/user-attachments/assets/7ad86de2-e738-4303-af4f-7cdcbc05e514" />
+
 ## 🔧 Admin Panel
 
 The admin panel is a full CMS built in vanilla JS. It is not linked from the portfolio — the URL is intentionally non-obvious.
@@ -212,6 +217,8 @@ Uses **Firebase Email/Password Authentication**. Set up via:
 | `quote-banner` | Large quote with customisable typography |
 | `skills-cloud` | Tag cloud of skills from Firestore |
 | `project-testimonial` | Navigable project cards with description |
+
+<img width="1377" height="1014" alt="Screenshot from 2026-04-01 19-30-16" src="https://github.com/user-attachments/assets/d05e2de1-a1b4-48f9-9323-8bfc8d343939" />
 
 ### Card Sizes
 
